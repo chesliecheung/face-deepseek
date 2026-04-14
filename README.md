@@ -1,6 +1,6 @@
-# face-deepseek
+# Smart-Blog-Platform
 
-基于 Spring Boot 与 AI 大模型的人脸识别后端项目。
+基于 Spring Boot 与 AI 大模型的人脸识别后端智慧博客平台项目。
 
 ## ✨ 功能简介
 - 人脸识别相关接口
