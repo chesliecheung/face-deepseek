@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摄像头拍照上传</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #cameraContainer {
+            margin: 20px 0;
+        }
+        #video {
+            width: 100%;
+            max-width: 640px;
+            background-color: #000;
+        }
+        #canvas {
+            display: none;
+        }
+        #photo {
+            max-width: 640px;
+            margin-top: 10px;
+            display: none;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<h1>摄像头拍照上传</h1>
+
+<div id="cameraContainer">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <img id="photo" alt="拍摄的照片">
+</div>
+
+<div>
+    <button id="startButton">打开摄像头</button>
+    <button id="captureButton" disabled>拍照</button>
+    <button id="uploadButton" disabled>上传照片</button>
+</div>
+
+<div id="message"></div>
+
+<script>
+    // 获取DOM元素
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const startButton = document.getElementById('startButton');
+    const captureButton = document.getElementById('captureButton');
+    const uploadButton = document.getElementById('uploadButton');
+    const messageDiv = document.getElementById('message');
+
+    let stream ="";
+
+    // 打开摄像头
+    startButton.addEventListener('click', async () => {
+        try {
+            messageDiv.textContent = '正在请求摄像头权限...';
+            stream = await navigator.mediaDevices.getUserMedia({//此处就是打开摄像头
+                video: { width: 640, height: 480 },
+                audio: false
+            });
+            video.srcObject = stream;
+            messageDiv.textContent = '摄像头已打开，可以拍照了';
+            startButton.disabled = true;
+            captureButton.disabled = false;
+        } catch (err) {
+            console.error('摄像头访问错误:', err);
+            messageDiv.textContent = '无法访问摄像头: ' + err.message;
+        }
+    });
+
+    // 拍照
+    captureButton.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const dataUrl = canvas.toDataURL('image/png');//将图片 转成 base64的格式
+        photo.src = dataUrl;
+        photo.style.display = 'block';
+
+        messageDiv.textContent = '照片已拍摄，可以上传了';
+        captureButton.disabled = true;
+        uploadButton.disabled = false;
+    });
+
+    // 上传照片
+    uploadButton.addEventListener('click', async () => {
+        try {
+            uploadButton.disabled = true;
+            messageDiv.textContent = '正在上传照片...';
+
+            // 获取Base64数据（去掉data:image/png;base64,前缀）
+            const base64Data = photo.src.split(',')[1];
+
+            // 发送到后端
+            const response = await fetch('/image/registerimage', { //此处在后台接收参数//
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image: base64Data
+
+                })
+            });
+
+                messageDiv.textContent = '照片注册成功！';
+
+        } catch (err) {
+
+            messageDiv.textContent = '注册失败: ' + err.message;
+            uploadButton.disabled = false;
+        }
+    });
+
+    // 页面卸载时关闭摄像头
+    window.addEventListener('beforeunload', () => {// 刷新页面
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+</body>
+</html>

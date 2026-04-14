@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>撰写新文章 - 智慧博客平台（融合版）</title>
+
+    <!-- 第三方样式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #1e293b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --navbar-height: 70px;
+            --editor-bg: #1a2236;
+            --input-bg: #222b41;
+            --input-border: #3f4a60;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        /* 高斯模糊顶栏 - 黑色主题 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            height: var(--navbar-height);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--primary-light);
+        }
+
+        /* 用户信息栏 - 优化样式 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-info:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .user-info img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info img:hover {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--light);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .username::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            box-shadow: 0 0 10px var(--primary-light);
+        }
+
+        .navbar .user-info button {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar .user-info button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .navbar .user-info button.primary {
+            background: var(--primary);
+        }
+
+        .navbar .user-info button.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-light), var(--accent));
+            border-radius: 3px;
+        }
+
+        /* 主布局 */
+        .container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+            max-width: 1280px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* 编辑器区域 */
+        .editor-panel {
+            background: var(--editor-bg);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        /* 编辑器顶部操作栏 */
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .editor-header .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* 编辑器主体 */
+        .editor-container {
+            padding: 25px;
+        }
+
+        .title-input {
+            font-size: 28px;
+            font-weight: 800;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid var(--input-border);
+            margin-bottom: 25px;
+            width: 100%;
+            color: var(--text-primary);
+            background: var(--input-bg);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .title-input:focus {
+            outline: none;
+            border-bottom: 2px solid var(--primary-light);
+            background: var(--input-bg);
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        #editor-container {
+            height: 500px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--input-border);
+            background: var(--editor-bg);
+        }
+
+        /* 自定义Quill编辑器暗色主题 */
+        .ql-toolbar.ql-snow {
+            border: 1px solid var(--input-border);
+            border-bottom: none;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            padding: 12px;
+        }
+
+        .ql-container.ql-snow {
+            border: 1px solid var(--input-border);
+            background: var(--editor-bg);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .ql-editor {
+            color: var(--text-primary);
+        }
+
+        .ql-editor.ql-blank::before {
+            color: var(--text-secondary);
+            font-style: normal;
+        }
+
+        .ql-snow .ql-stroke {
+            stroke: var(--text-primary);
+        }
+
+        .ql-snow .ql-fill {
+            fill: var(--text-primary);
+        }
+
+        .ql-snow .ql-picker {
+            color: var(--text-primary);
+        }
+
+        .ql-snow .ql-picker-options {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+        }
+
+        .word-count {
+            text-align: right;
+            margin-top: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-light);
+        }
+
+        /* ===================== AI 助手面板 ===================== */
+        .ai-panel {
+            margin-top: 25px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .ai-option {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 13px;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            user-select: none;
+        }
+
+        .ai-option:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .ai-option[disabled] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ===================== 设置面板 ===================== */
+        .settings-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .settings-section {
+            background: var(--editor-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .settings-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .settings-title i {
+            color: var(--primary-light);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: var(--transition);
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: var(--input-bg);
+        }
+
+        /* 选择框样式优化 */
+        select.form-control {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+            padding-right: 45px;
+        }
+
+        /* 标签输入框样式优化 */
+        .tagify.form-control {
+            padding: 8px;
+            --tags-border-color: var(--input-border);
+            --tag-bg: var(--primary);
+            --tag-hover: var(--primary-light);
+            --tag-text-color: white;
+            --tag-text-color--edit: white;
+            --tags-focus-border-color: var(--primary-light);
+            --placeholder-color: var(--text-secondary);
+            --placeholder-color-focus: var(--text-secondary);
+            background: var(--input-bg);
+        }
+
+        /* ===================== 封面上传 ===================== */
+        .cover-preview {
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed var(--input-border);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .cover-preview:hover {
+            border-color: var(--primary-light);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .cover-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-preview i {
+            font-size: 32px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .cover-preview span {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* ===================== 动画效果 ===================== */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* ===================== 登录提示模态 ===================== */
+        .login-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .login-modal {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--card-shadow);
+        }
+
+        .login-modal h2 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .login-modal p {
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+        }
+
+        .login-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .login-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* ===================== 自定义弹窗样式 ===================== */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .custom-modal-content {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: var(--card-shadow);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-modal.active .custom-modal-content {
+            transform: translateY(0);
+        }
+
+        .custom-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .custom-modal-message {
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .custom-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .custom-modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            min-width: 100px;
+        }
+
+        .custom-modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .custom-modal-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .custom-modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* ===================== 小提示样式 ===================== */
+        .help-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 12px;
+            border: 1px solid var(--input-border);
+            border-bottom-width: 2px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* ===================== 响应式 ===================== */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ai-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .navbar {
+                padding: 0 4%;
+            }
+
+            .navbar .user-info button span {
+                display: none;
+            }
+
+            .username {
+                display: none;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .user-info {
+                padding: 6px;
+            }
+
+            .user-info img {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+<!-- 高斯模糊顶栏 - 黑色主题 -->
+<div class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> 智慧博客平台</div>
+    <div class="user-info" id="userInfo">
+        <img src="https://ui-avatars.com/api/?name=User&background=3498db&color=fff" id="userAvatar" alt="用户头像">
+        <span class="username" id="username">加载中...</span>
+
+        <button onclick="window.location.href='personal.html'">
+            <i class="fas fa-user"></i> <span>我的</span>
+        </button>
+
+        <button onclick="window.location.href='index.html'">
+            <i class="fas fa-home"></i> <span>首页</span>
+        </button>
+
+        <button onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> <span>退出</span>
+        </button>
+    </div>
+</div>
+
+<h1 class="page-title">创作 · 分享 · 启迪</h1>
+
+<!-- ===================== 登录提示模态框 ===================== -->
+<div class="login-prompt" id="loginPrompt" style="display: none;">
+    <div class="login-modal">
+        <h2>请先登录</h2>
+        <p>您需要登录后才能创建和发布文章</p>
+        <button class="login-btn" onclick="redirectToLogin()">前往登录</button>
+    </div>
+</div>
+
+<!-- ===================== 自定义弹窗 ===================== -->
+<div class="custom-modal" id="customConfirmModal">
+    <div class="custom-modal-content">
+        <h3 class="custom-modal-title" id="confirmModalTitle">确认操作</h3>
+        <p class="custom-modal-message" id="confirmModalMessage">是否将 AI 结果替换当前编辑器内容？</p>
+        <div class="custom-modal-buttons">
+            <button class="custom-modal-btn custom-modal-btn-primary" id="confirmModalReplace">替换</button>
+            <button class="custom-modal-btn custom-modal-btn-secondary" id="confirmModalAppend">追加</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ===================== 左侧：编辑区域 ===================== -->
+    <div class="editor-panel">
+        <!-- 顶部导航 -->
+        <div class="editor-header">
+            <div class="logo">
+                <i class="fas fa-edit"></i> 文章编辑器
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="saveDraftBtn"><i class="fas fa-save"></i> 保存草稿</button>
+                <button class="btn btn-primary" id="publishBtn"><i class="fas fa-paper-plane"></i> 发布文章</button>
+            </div>
+        </div>
+
+        <!-- 编辑器主体 -->
+        <div class="editor-container">
+            <input type="text" class="title-input" id="articleTitle" placeholder="请输入文章标题..." />
+
+            <!-- Quill 编辑器容器 -->
+            <div id="editor-container"></div>
+
+            <div class="word-count">
+                <span id="word-count">0</span> 字
+            </div>
+
+            <!-- AI 助手面板 -->
+            <div class="ai-panel" id="aiPanel">
+                <div class="ai-title"><i class="fas fa-robot"></i> DeepSeek AI 助手</div>
+                <div class="ai-options">
+                    <!-- data-action 值与后端的 action 一一对应 -->
+                    <div class="ai-option" data-action="生成大纲">生成大纲</div>
+                    <div class="ai-option" data-action="优化表达">优化表达</div>
+                    <div class="ai-option" data-action="续写内容">续写内容</div>
+                    <div class="ai-option" data-action="生成摘要">生成摘要</div>
+                    <div class="ai-option" data-action="检查语法">检查语法</div>
+
+                </div>
+                <div class="help-text" style="margin-top:10px;color:rgba(255,255,255,0.8);">说明：除"生成摘要"外，其它操作将询问是覆盖全文还是在文末追加。</div>
+            </div>
+
+            <div class="status-indicator" id="autosaveStatus">
+                <div class="status-dot"></div>
+                <span>已自动保存</span>
+            </div>
+            <div class="help-text">提示：按 <span class="kbd">Ctrl</span> + <span class="kbd">S</span> 可快速保存草稿</div>
+        </div>
+    </div>
+
+    <!-- ===================== 右侧：设置面板 ===================== -->
+    <div class="settings-panel">
+        <div class="settings-section">
+            <h3 class="settings-title"><i class="fas fa-cog"></i> 文章设置</h3>
+            <div class="form-group">
+                <label class="form-label" for="articleCategory">分类</label>
+                <select class="form-control" id="articleCategory">
+                    <option value="">选择分类</option>
+                    <option value="1">技术</option>
+                    <option value="2">生活</option>
+                    <option value="3">旅行</option>
+                    <option value="4">美食</option>
+                    <option value="5">健康</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="tags-input">标签</label>
+                <input class="form-control" id="tags-input" placeholder="输入标签后按回车" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="articleSummary">摘要</label>
+                <textarea class="form-control" id="articleSummary" rows="3" placeholder="文章摘要（可选）"></textarea>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-title"><i class="fas fa-image"></i> 封面设置</h3>
+            <div class="form-group">
+                <label class="form-label" for="cover-upload">上传封面</label>
+                <input type="file" id="cover-upload" class="form-control" accept="image/*" style="display: none;" />
+                <div class="cover-preview" id="cover-preview">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>点击上传封面图片</span>
+                </div>
+                <div class="help-text">建议尺寸≥ 1200×630，JPG/PNG</div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-title"><i class="fas fa-share"></i> 发布设置</h3>
+            <div class="form-group">
+                <label class="form-label" for="articleVisibility">可见性</label>
+                <select class="form-control" id="articleVisibility">
+                    <option value="public">公开</option>
+                    <option value="followers">仅粉丝可见</option>
+                    <option value="private">私密</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="commentPermission">评论权限</label>
+                <select class="form-control" id="commentPermission">
+                    <option value="everyone">所有人</option>
+                    <option value="followers">仅粉丝</option>
+                    <option value="closed">关闭评论</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="publishTime">发布时间</label>
+                <input type="datetime-local" class="form-control" id="publishTime" />
+                <small style="color: var(--text-secondary); display: block; margin-top: 5px;">留空则立即发布</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== 第三方脚本 ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<script>
+    // =====================================================
+    // 可配置的后端地址
+    // =====================================================
+    const API_BASE = "http://localhost:9999"; // 如需更换端口/域名，修改此处一处即可
+    const AI_SERVICE_BASE_URL = API_BASE + "/ai/complete";
+    const ARTICLE_API_BASE_URL = API_BASE + "/article";
+    const UPLOAD_API_URL = API_BASE + "/upload/cover";
+    const USER_INFO_URL = API_BASE + "/user/info";
+
+    // =====================================================
+    // 全局状态变量
+    // =====================================================
+    let currentUser = null;
+    let quill = null;
+    let tagify = null;
+    let coverUrl = null; // 封面 URL
+    let autoSaveTimer = null;
+    let aiResultPending = null; // 存储待处理的AI结果
+
+    // =====================================================
+    // 初始化入口
+    // =====================================================
+    $(document).ready(function () {
+        // 登录检查
+        checkLoginStatus();
+
+        // 标签输入初始化（Tagify）
+        const input = document.querySelector('#tags-input');
+        tagify = new Tagify(input, {
+            maxTags: 10,
+            dropdown: { maxItems: 20, classname: "tags-look", enabled: 0, closeOnSelect: false }
+        });
+
+        // 初始化 Quill 编辑器
+        quill = new Quill('#editor-container', {
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'script': 'sub' }, { 'script': 'super' }],
+                    [{ 'indent': '-1' }, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            },
+            placeholder: '开始撰写你的文章内容...',
+            theme: 'snow'
+        });
+
+        // 自定义Quill工具栏按钮颜色
+        const toolbarButtons = document.querySelectorAll('.ql-toolbar button, .ql-toolbar .ql-picker-item');
+        toolbarButtons.forEach(button => {
+            button.style.color = '#e2e8f0';
+        });
+
+        // 字数统计
+        quill.on('text-change', function () {
+            const text = quill.getText();
+            const wordCount = text.trim() === '' ? 0 : text.trim().replace(/\n/g, ' ').split(/\s+/).filter(Boolean).length;
+            $('#word-count').text(wordCount);
+        });
+
+        // Ctrl+S 快捷保存草稿
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                if (currentUser) {
+                    const data = buildDraftPayload();
+                    saveDraft(data, { silent: true });
+                } else {
+                    $('#loginPrompt').show();
+                }
+            }
+        });
+
+        // 封面上传：点击预览区域选择文件
+        $('#cover-preview').click(function () { $('#cover-upload').click(); });
+        $('#cover-upload').change(handleCoverSelected);
+
+        // 发布按钮
+        $('#publishBtn').click(function () {
+            if (!currentUser) { $('#loginPrompt').show(); return; }
+            const title = $('#articleTitle').val();
+            if (!title) { alert('请输入文章标题'); $('#articleTitle').focus(); return; }
+            const payload = buildPublishPayload();
+            publishArticle(payload);
+        });
+
+        // 保存草稿按钮
+        $('#saveDraftBtn').click(function () {
+            if (!currentUser) { $('#loginPrompt').show(); return; }
+            const payload = buildDraftPayload();
+            saveDraft(payload);
+        });
+
+        // AI 面板绑定事件
+        bindAiPanelEvents();
+
+        // 自定义弹窗事件绑定
+        $('#confirmModalReplace').click(function() {
+            $('#customConfirmModal').removeClass('active');
+            if (aiResultPending) {
+                quill.setText(aiResultPending);
+                aiResultPending = null;
+            }
+        });
+
+        $('#confirmModalAppend').click(function() {
+            $('#customConfirmModal').removeClass('active');
+            if (aiResultPending) {
+                const end = quill.getLength();
+                quill.insertText(end, (end > 1 ? '\n' : '') + aiResultPending);
+                quill.setSelection(quill.getLength(), 0);
+                aiResultPending = null;
+            }
+        });
+
+        // 可选：自动保存（每 60 秒；需要已登录且标题或内容非空）
+        startAutoSave();
+    });
+
+    // =====================================================
+    // 登录状态检查
+    // =====================================================
+    function checkLoginStatus() {
+        fetch(USER_INFO_URL, { method: 'GET', credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if ((data.success || data.code === 200) && data.data) {
+                    currentUser = data.data;
+                    $('#username').text(currentUser.username);
+
+                    // ============= 修复头像显示逻辑 =============
+                    // 1. 确认后端返回的头像字段名（重点！若不是avatar，需改为实际字段名，如avatarUrl）
+                    const backendAvatarField = currentUser.avatarUrl; // 这里替换为后端实际的头像字段名！
+                    // 2. 处理绝对/相对路径：若为相对路径，拼接API_BASE；若为绝对路径直接使用
+                    const avatarUrl = backendAvatarField
+                        ? (backendAvatarField.startsWith('http') ? backendAvatarField : API_BASE + backendAvatarField)
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}`;
+                    // 3. 设置头像并添加加载失败兜底（链接无效时显示默认生成头像）
+                    $('#userAvatar')
+                        .attr('src', avatarUrl)
+                        .on('error', function() {
+                            // 头像加载失败时触发，显示默认生成的头像
+                            $(this).attr('src', `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}`);
+                        });
+
+                    $('#loginPrompt').hide();
+                } else {
+                    $('#loginPrompt').show();
+                }
+            })
+            .catch(err => {
+                console.error('检查登录状态失败:', err);
+                $('#loginPrompt').show();
+            });
+    }
+
+    // =====================================================
+    // 退出登录
+    // =====================================================
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            fetch(`${API_BASE}/user/logout`, {
+                method: "POST",
+                credentials: 'include'
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "login.html";
+                    } else {
+                        alert("退出失败：" + (data.msg || "未知错误"));
+                    }
+                })
+                .catch(err => {
+                    alert("网络异常，退出失败");
+                });
+        }
+    }
+
+    // =====================================================
+    // 封面上传处理
+    // =====================================================
+    function handleCoverSelected(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) { $('#cover-preview').html('<img src="' + ev.target.result + '" alt="封面预览">'); };
+        reader.readAsDataURL(file);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch(UPLOAD_API_URL, { method: 'POST', body: formData, credentials: 'include' })
+            .then(res => res.json())
+            .then(result => {
+                console.log('上传接口返回：', result);
+                if (result && (result.success === true || result.code === 200)) {
+                    // 后端返回 { success: true, data: { url: 'xxx' } }
+                    coverUrl = result.data && result.data.url ? result.data.url : null;
+                    if (coverUrl) {
+                        $('#cover-preview').html(`<img src="${coverUrl}" alt="文章封面" style="max-width:100%;max-height:100%;object-fit:cover;">`);
+                    } else {
+                        alert('封面上传成功，但未返回 URL');
+                    }
+                } else {
+                    alert('封面上传失败：' + (result && (result.msg || result.message) || '未知错误'));
+                    coverUrl = null;
+                }
+            })
+            .catch(err => {
+                console.error('封面上传失败:', err);
+                alert('封面上传失败：网络异常或服务不可用');
+                coverUrl = null;
+            });
+    }
+
+    // =====================================================
+    // 构造请求负载
+    // =====================================================
+    function getTags() { return tagify ? tagify.value.map(tag => tag.value) : []; }
+
+    function buildPublishPayload() {
+        return {
+            title: $('#articleTitle').val().trim(),
+            content: quill.root.innerHTML,
+            summary: $('#articleSummary').val().trim(),
+            categoryId: $('#articleCategory').val(),
+            tags: getTags(),
+            visibility: $('#articleVisibility').val(),
+            commentPermission: $('#commentPermission').val(),
+            publishTime: $('#publishTime').val() || null,
+            coverImageUrl: coverUrl
+        };
+    }
+
+    function buildDraftPayload() {
+        return {
+            title: $('#articleTitle').val().trim(),
+            content: quill.root.innerHTML,
+            summary: $('#articleSummary').val().trim(),
+            categoryId: $('#articleCategory').val(),
+            tags: getTags(),
+            status: 'draft',
+            coverImageUrl: coverUrl
+        };
+    }
+
+    // =====================================================
+    // 发布 / 保存草稿
+    // =====================================================
+    function publishArticle(articleData) {
+        $('#publishBtn').html('<i class="fas fa-spinner fa-spin"></i> 发布中...').prop('disabled', true);
+        fetch(ARTICLE_API_BASE_URL + '/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(articleData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('文章发布成功！');
+                    resetForm();
+                } else {
+                    alert('发布失败：' + (data.msg || data.message || '未知错误'));
+                }
+            })
+            .catch(err => {
+                console.error('发布文章失败:', err);
+                alert('发布失败：网络异常或服务不可用');
+            })
+            .finally(() => {
+                $('#publishBtn').html('<i class="fas fa-paper-plane"></i> 发布文章').prop('disabled', false);
+            });
+    }
+
+    function saveDraft(articleData, options = { silent: false }) {
+        $('#saveDraftBtn').html('<i class="fas fa-spinner fa-spin"></i> 保存中...').prop('disabled', true);
+        fetch(ARTICLE_API_BASE_URL + '/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(articleData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (!options.silent) {
+                        $('#saveDraftBtn').html('<i class="fas fa-check"></i> 已保存');
+                        setTimeout(() => {
+                            $('#saveDraftBtn').html('<i class="fas fa-save"></i> 保存草稿').prop('disabled', false);
+                            $('#autosaveStatus').addClass('pulse');
+                            setTimeout(() => $('#autosaveStatus').removeClass('pulse'), 2000);
+                        }, 800);
+                    }
+                } else {
+                    alert('草稿保存失败：' + (data.msg || data.message || '未知错误'));
+                    $('#saveDraftBtn').html('<i class="fas fa-save"></i> 保存草稿').prop('disabled', false);
+                }
+            })
+            .catch(err => {
+                console.error('保存草稿失败:', err);
+                if (!options.silent) alert('保存草稿失败：网络异常或服务不可用');
+                $('#saveDraftBtn').html('<i class="fas fa-save"></i> 保存草稿').prop('disabled', false);
+            })
+            .finally(() => {
+                if (options.silent) $('#saveDraftBtn').html('<i class="fas fa-save"></i> 保存草稿').prop('disabled', false);
+            });
+    }
+
+    // 自动保存（每 60 秒一次）
+    function startAutoSave() {
+        if (autoSaveTimer) clearInterval(autoSaveTimer);
+        autoSaveTimer = setInterval(() => {
+            if (!currentUser) return;
+            const title = $('#articleTitle').val().trim();
+            const contentText = quill.getText().trim();
+            if (title || contentText) {
+                const data = buildDraftPayload();
+                saveDraft(data, { silent: true });
+            }
+        }, 60000);
+    }
+
+    // =====================================================
+    // AI 助手：第一份代码的核心逻辑迁入
+    // =====================================================
+    function getEditorTextOrTitle() {
+        const text = quill.getText().trim();
+        if (text) return text;
+        const title = $('#articleTitle').val().trim();
+        return title || '';
+    }
+
+    // 过滤<think>标签的函数
+    function filterThinkTags(text) {
+        // 使用正则表达式移除<think>标签及其内容
+        return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    }
+
+    function applyAiResultToEditor(result) {
+        // 使用自定义弹窗替代原生confirm
+        aiResultPending = result;
+        $('#confirmModalMessage').html('是否将 AI 结果<b>替换</b>当前编辑器内容？<br><small style="color:#94a3b8">点击"替换"将替换全文，点击"追加"将在文末添加</small>');
+        $('#customConfirmModal').addClass('active');
+    }
+
+    function callAiService(text, action) {
+        return new Promise((resolve, reject) => {
+            fetch(AI_SERVICE_BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ action: action, text: text })
+            })
+                .then(r => { if (!r.ok) throw new Error('HTTP错误: ' + r.status); return r.json(); })
+                .then(json => { if (json.success) resolve(json.data); else reject(new Error(json.msg || 'AI返回异常')); })
+                .catch(reject);
+        });
+    }
+
+    function bindAiPanelEvents() {
+        const panel = document.getElementById('aiPanel');
+        if (!panel) return;
+        panel.querySelectorAll('.ai-option').forEach(btn => {
+            btn.addEventListener('click', () => handleAiAction(btn));
+        });
+    }
+
+    async function handleAiAction(btn) {
+        const action = btn.getAttribute('data-action') || btn.innerText.trim();
+        const content = getEditorTextOrTitle();
+        if (!content) { alert('请先输入标题或内容'); return; }
+        setAiBusy(btn, true);
+        try {
+            const res = await callAiService(content, action);
+            // 过滤掉<think>标签部分
+            const filteredRes = filterThinkTags(res);
+
+            if (action === '生成摘要') {
+                $('#articleSummary').val(filteredRes);
+            } else if (action === '生成插图') {
+                // 尝试从返回内容中识别 URL；若包含 http(s)，则插入图片，否则作为文本追加
+                const urlMatch = /https?:\/\/\S+/i.exec(filteredRes);
+                if (urlMatch) {
+                    const imgUrl = urlMatch[0].replace(/[\)\]\>\.]$/, '');
+                    const index = quill.getLength();
+                    quill.insertEmbed(index, 'image', imgUrl, 'user');
+                    quill.insertText(quill.getLength(), '\n');
+                } else {
+                    applyAiResultToEditor(filteredRes);
+                }
+            } else {
+                applyAiResultToEditor(filteredRes);
+            }
+        } catch (err) {
+            alert(action + '失败：' + err.message);
+        } finally {
+            setAiBusy(btn, false);
+        }
+    }
+
+    function setAiBusy(btn, busy) {
+        if (!btn) return;
+        if (busy) {
+            btn.setAttribute('disabled', 'disabled');
+            const t = btn.innerHTML;
+            btn.setAttribute('data-text', t);
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+        } else {
+            btn.removeAttribute('disabled');
+            const t = btn.getAttribute('data-text');
+            if (t) btn.innerHTML = t;
+        }
+    }
+
+    // =====================================================
+    // 其它工具方法
+    // =====================================================
+    function resetForm() {
+        $('#articleTitle').val('');
+        quill.setText('');
+        $('#articleSummary').val('');
+        $('#articleCategory').val('');
+        $('#articleVisibility').val('public');
+        $('#commentPermission').val('everyone');
+        $('#publishTime').val('');
+        if (tagify) tagify.removeAllTags();
+        $('#cover-preview').html('<i class="fas fa-cloud-upload-alt"></i><span>点击上传封面图片</span>');
+        coverUrl = null;
+    }
+
+    function redirectToLogin() { window.location.href = '/login.html'; }
+</script>
+</body>
+</html>

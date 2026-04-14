@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作者主页 - 智慧博客平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #1e293b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --navbar-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        /* 高斯模糊顶栏 - 黑色主题 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            height: var(--navbar-height);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--primary-light);
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .user-info img:hover {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .navbar .user-info button {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar .user-info button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 主体布局 */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            max-width: 1280px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* 作者信息卡片 */
+        .author-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .author-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .author-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto 16px;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .author-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .author-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: var(--light);
+        }
+
+        .author-bio {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .author-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-light);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-light);
+        }
+
+        .follow-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 15px;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .follow-btn.followed {
+            background: #10b981;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .follow-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .follow-btn.followed:hover {
+            background: #059669;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 文章列表 */
+        .articles-container {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .articles-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 10px 0 20px;
+            color: var(--light);
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2em;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .article-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        .article-item:hover {
+            transform: translateX(5px);
+        }
+
+        .article-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .article-cover {
+            width: 120px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .article-item:hover .article-cover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-info {
+            flex: 1;
+        }
+
+        .article-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px;
+            color: var(--light);
+            line-height: 1.4;
+        }
+
+        .article-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .article-title a:hover {
+            color: var(--primary-light);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .article-summary {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-meta {
+            font-size: 13px;
+            color: var(--gray-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .article-meta span:hover {
+            color: var(--primary-light);
+        }
+
+        /* 分页控件 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--light);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination span {
+            font-size: 15px;
+            color: var(--gray-light);
+            padding: 0 5px;
+        }
+
+        /* 加载状态 */
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--gray-light);
+        }
+
+        .loading-spinner i {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: var(--primary-light);
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner p {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--gray-light);
+        }
+
+        .empty-state i {
+            font-size: 56px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            color: var(--primary-light);
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+            color: var(--gray-light);
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 992px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .author-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .navbar {
+                padding: 0 4%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .article-item {
+                flex-direction: column;
+            }
+            .article-cover {
+                width: 100%;
+                height: 160px;
+            }
+            .author-avatar {
+                width: 100px;
+                height: 100px;
+            }
+            .author-name {
+                font-size: 22px;
+            }
+            .pagination {
+                gap: 8px;
+            }
+            .pagination button {
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部导航 -->
+<div class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> 智慧博客平台</div>
+    <div class="user-info">
+        <img id="userAvatar" src="" alt="头像"
+             onerror="this.src='http://localhost:9999/uploads/default-avatar.png'">
+
+        <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
+    </div>
+</div>
+
+<div class="layout">
+    <!-- 作者信息侧边栏 -->
+    <div class="author-card">
+        <img id="authorAvatar" class="author-avatar" src="" alt="作者头像" onerror="this.src=defaultAvatar">
+        <h1 class="author-name" id="authorName">加载中...</h1>
+        <p class="author-bio" id="authorBio">该作者暂无简介</p>
+
+        <div class="author-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="articleCount">0</div>
+                <div class="stat-label">文章</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="followerCount">0</div>
+                <div class="stat-label">粉丝</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="followingCount">0</div>
+                <div class="stat-label">关注</div>
+            </div>
+        </div>
+
+        <button id="followBtn" class="follow-btn">关注作者</button>
+    </div>
+
+    <!-- 文章列表 -->
+    <div class="articles-container">
+        <h2 class="section-title">作者的文章</h2>
+        <div id="articlesList" class="article-list">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>文章加载中...</p>
+            </div>
+        </div>
+
+        <!-- 分页控件 -->
+        <div class="pagination">
+            <button id="prevPage" disabled>上一页</button>
+            <span id="pageInfo">第 1 页 / 共 1 页</span>
+            <button id="nextPage" disabled>下一页</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© 2023 智慧博客平台 · 探索技术的无限可能</p>
+    <p>背景图片来自 Unsplash，设计灵感来源于现代UI设计理念</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 基础配置
+    const authorId = new URLSearchParams(window.location.search).get("id");
+    const baseUrl = "http://localhost:9999";
+    const defaultAvatar = `${baseUrl}/uploads/default-avatar.png`;
+    const loginPageUrl = "login.html";
+
+    // 全局变量
+    let loginUser = null;
+    let followed = false;
+    let currentPage = 1;
+    let totalPages = 1;
+    let pageSize = 10;
+
+    /**
+     * 从Session获取登录用户信息
+     */
+    function getLoginUserFromSession() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `${baseUrl}/user/info`,
+                type: "GET",
+                xhrFields: { withCredentials: true },
+                success: function(res) {
+                    if (res.success && res.data) {
+                        loginUser = res.data;
+                        initUserAvatar(loginUser);
+                        resolve();
+                    } else {
+                        handleUnLoginStatus();
+                        reject();
+                    }
+                },
+                error: function() {
+                    $("#userAvatar").attr("src", defaultAvatar);
+                    reject();
+                }
+            });
+        });
+    }
+
+    /**
+     * 初始化用户头像
+     */
+    function initUserAvatar(loginUserObj) {
+        let userAvatarUrl = defaultAvatar;
+        if (!loginUserObj) {
+            $("#userAvatar").attr("src", userAvatarUrl);
+            return;
+        }
+
+        const av = loginUserObj.avatarUrl || loginUserObj.avatar || loginUserObj.imagetoken || "";
+        if (av && av.toString().trim() !== "") {
+            if (av.toString().startsWith("http")) {
+                userAvatarUrl = av.toString();
+            } else {
+                const relativePath = av.toString().startsWith("/") ? av.toString() : `/${av.toString()}`;
+                userAvatarUrl = `${baseUrl}${relativePath}`;
+            }
+        }
+        $("#userAvatar").attr("src", userAvatarUrl);
+    }
+
+    /**
+     * 处理未登录状态
+     */
+    function handleUnLoginStatus() {
+        localStorage.removeItem("loginUser");
+        loginUser = null;
+        $("#userAvatar").attr("src", defaultAvatar);
+    }
+
+    /**
+     * 加载作者信息
+     */
+    function loadAuthorInfo() {
+        if (!authorId) {
+            $("#authorName").text("参数错误");
+            return;
+        }
+
+        // 首先尝试调用新的API
+        $.ajax({
+            url: `${baseUrl}/user/detail?id=${authorId}`,
+            type: "GET",
+            success: function(res) {
+                if (res.success && res.data) {
+                    const author = res.data;
+
+                    // 填充作者信息
+                    $("#authorName").text(author.username || "未知用户");
+
+                    // 设置作者头像
+                    let authorAvatar = defaultAvatar;
+                    if (author.avatarUrl) {
+                        authorAvatar = author.avatarUrl.startsWith("http")
+                            ? author.avatarUrl
+                            : `${baseUrl}${author.avatarUrl.startsWith("/") ? "" : "/"}${author.avatarUrl}`;
+                    }
+                    $("#authorAvatar").attr("src", authorAvatar);
+
+                    // 设置作者简介 - 修复这里：无论bio是否存在都设置
+                    const bioText = author.bio && author.bio !== "暂无简介" ? author.bio : "该作者暂无简介";
+                    $("#authorBio").text(bioText);
+
+                    // 设置统计数据
+                    $("#articleCount").text(author.articleCount || 0);
+                    $("#followerCount").text(author.followerCount || 0);
+                    $("#followingCount").text(author.followingCount || 0);
+
+                    // 加载关注状态（如果已登录）
+                    if (loginUser) {
+                        loadFollowInitialState();
+                    }
+                } else {
+                    // 如果新API失败，尝试使用现有API获取基本信息
+                    loadAuthorBasicInfo();
+                    console.error("获取作者详情失败:", res.msg);
+                }
+            },
+            error: function(xhr, status, error) {
+                // 如果API不存在，使用现有API获取基本信息
+                loadAuthorBasicInfo();
+                console.error("获取作者详情API不存在，使用基本API:", error);
+            }
+        });
+    }
+
+    /**
+     * 使用现有API加载作者基本信息
+     */
+    function loadAuthorBasicInfo() {
+        $.ajax({
+            url: `${baseUrl}/user/info`,
+            type: "GET",
+            data: { id: authorId },
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success && res.data) {
+                    const author = res.data;
+
+                    // 填充作者信息
+                    $("#authorName").text(author.username || "未知用户");
+
+                    // 设置作者头像
+                    let authorAvatar = defaultAvatar;
+                    if (author.avatarUrl) {
+                        authorAvatar = author.avatarUrl.startsWith("http")
+                            ? author.avatarUrl
+                            : `${baseUrl}${author.avatarUrl.startsWith("/") ? "" : "/"}${author.avatarUrl}`;
+                    }
+                    $("#authorAvatar").attr("src", authorAvatar);
+
+                    // 新增：设置作者简介（如果API返回了bio字段）
+                    if (author.bio) {
+                        $("#authorBio").text(author.bio);
+                    }
+
+                    // 使用现有API获取统计数据
+                    loadAuthorStats();
+
+                    // 加载关注状态（如果已登录）
+                    if (loginUser) {
+                        loadFollowInitialState();
+                    }
+                } else {
+                    $("#authorName").text("用户不存在");
+                    console.error("获取作者基本信息失败:", res.msg);
+                }
+            },
+            error: function(xhr, status, error) {
+                $("#authorName").text("加载失败");
+                console.error("获取作者基本信息网络错误:", error);
+            }
+        });
+    }
+
+    /**
+     * 加载作者统计数据
+     */
+    function loadAuthorStats() {
+        // 获取文章数量
+        $.ajax({
+            url: `${baseUrl}/article/my`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            data: { userId: authorId },
+            success: function(res) {
+                if (res.success) {
+                    const publishedArticles = res.data.filter(article => article.status === "published");
+                    $("#articleCount").text(publishedArticles.length);
+                }
+            },
+            error: function() {
+                $("#articleCount").text("0");
+            }
+        });
+
+        // 获取粉丝数量
+        $.ajax({
+            url: `${baseUrl}/user/followerCount`,
+            type: "GET",
+            data: { userId: authorId },
+            success: function(res) {
+                if (res.success) {
+                    $("#followerCount").text(res.data);
+                }
+            },
+            error: function() {
+                $("#followerCount").text("0");
+            }
+        });
+
+        // 关注数量暂时设为0（如果没有对应API）
+        $("#followingCount").text("0");
+    }
+
+    /**
+     * 加载关注初始状态
+     */
+    function loadFollowInitialState() {
+        if (!loginUser || !authorId) return;
+
+        $.ajax({
+            url: `${baseUrl}/follow/check`,
+            type: "GET",
+            data: { followeeId: Number(authorId) },
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    followed = res.data;
+                    updateFollowBtnState();
+                } else {
+                    console.error("加载关注状态失败:", res.msg);
+                }
+            },
+            error: function() {
+                console.error("加载关注状态网络错误");
+            }
+        });
+    }
+
+    /**
+     * 切换关注状态
+     */
+    function toggleFollow() {
+        if (!loginUser) {
+            alert("请先登录");
+            return;
+        }
+        if (!authorId) {
+            alert("无法获取作者信息");
+            return;
+        }
+
+        const url = followed ? `${baseUrl}/follow/remove` : `${baseUrl}/follow/add`;
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { followeeId: Number(authorId) },
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    followed = !followed;
+                    updateFollowBtnState();
+
+                    // 更新粉丝数
+                    const currentFollowerCount = parseInt($("#followerCount").text());
+                    $("#followerCount").text(followed ? currentFollowerCount + 1 : currentFollowerCount - 1);
+
+                    alert(followed ? "已成功关注作者" : "已成功取消关注");
+                } else {
+                    alert(res.msg || "操作失败");
+                }
+            },
+            error: function() {
+                alert("网络异常，操作失败");
+            }
+        });
+    }
+
+    /**
+     * 更新关注按钮状态
+     */
+    function updateFollowBtnState() {
+        if (followed) {
+            $("#followBtn").text("已关注").addClass("followed");
+        } else {
+            $("#followBtn").text("关注作者").removeClass("followed");
+        }
+    }
+
+    /**
+     * 加载作者文章列表
+     */
+    function loadAuthorArticles(page = 1) {
+        if (!authorId) return;
+
+        $("#articlesList").html(`
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>文章加载中...</p>
+            </div>
+        `);
+
+        // 首先尝试调用新的API
+        $.ajax({
+            url: `${baseUrl}/article/listByAuthor?authorId=${authorId}&page=${page}&size=${pageSize}`,
+            type: "GET",
+            success: function(res) {
+                if (res.success && res.data) {
+                    const data = res.data;
+                    const articles = data.records || [];
+                    currentPage = data.current || 1;
+                    totalPages = data.pages || 1;
+
+                    renderArticles(articles);
+                    updatePagination();
+                } else {
+                    // 如果新API失败，尝试使用现有API
+                    loadAuthorArticlesFallback();
+                    console.error("获取作者文章失败:", res.msg);
+                }
+            },
+            error: function(xhr, status, error) {
+                // 如果API不存在，使用现有API
+                loadAuthorArticlesFallback();
+                console.error("获取作者文章API不存在，使用基本API:", error);
+            }
+        });
+    }
+
+    /**
+     * 使用现有API加载作者文章（备选方案）
+     */
+    function loadAuthorArticlesFallback() {
+        $.ajax({
+            url: `${baseUrl}/article/my`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            data: { userId: authorId },
+            success: function(res) {
+                if (res.success && res.data && res.data.length > 0) {
+                    const articles = res.data.filter(article => article.status === "published");
+                    currentPage = 1;
+                    totalPages = 1;
+
+                    renderArticles(articles);
+                    updatePagination();
+                } else {
+                    $("#articlesList").html(`
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <p>该作者暂无文章</p>
+                        </div>
+                    `);
+                }
+            },
+            error: function() {
+                $("#articlesList").html(`
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>文章加载失败，请刷新重试</p>
+                    </div>
+                `);
+            }
+        });
+    }
+
+    /**
+     * 渲染文章列表
+     */
+    function renderArticles(articles) {
+        if (!articles || articles.length === 0) {
+            $("#articlesList").html(`
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <p>该作者暂无文章</p>
+                </div>
+            `);
+            return;
+        }
+
+        let html = "";
+        articles.forEach(article => {
+            const publishTime = article.publishTime
+                ? new Date(article.publishTime).toLocaleDateString()
+                : "未知时间";
+
+            const coverUrl = article.coverImageUrl
+                ? (article.coverImageUrl.startsWith("http")
+                    ? article.coverImageUrl
+                    : `${baseUrl}${article.coverImageUrl.startsWith("/") ? "" : "/"}${article.coverImageUrl}`)
+                : `${baseUrl}/uploads/default-cover.png`;
+
+            html += `
+                <li class="article-item">
+                    <img class="article-cover" src="${coverUrl}" alt="文章封面">
+                    <div class="article-info">
+                        <h3 class="article-title">
+                            <a href="detail.html?id=${article.id}">${article.title || "无标题"}</a>
+                        </h3>
+                        <p class="article-summary">${article.summary || "暂无摘要"}</p>
+                        <div class="article-meta">
+                            <span><i class="far fa-calendar-alt"></i> ${publishTime}</span>
+                            <span><i class="far fa-heart"></i> ${article.likeCount || 0}</span>
+                            <span><i class="far fa-comment"></i> ${article.commentCount || 0}</span>
+                        </div>
+                    </div>
+                </li>
+            `;
+        });
+
+        $("#articlesList").html(html);
+    }
+
+    /**
+     * 更新分页控件状态
+     */
+    function updatePagination() {
+        $("#pageInfo").text(`第 ${currentPage} 页 / 共 ${totalPages} 页`);
+        $("#prevPage").prop("disabled", currentPage <= 1);
+        $("#nextPage").prop("disabled", currentPage >= totalPages);
+    }
+
+    /**
+     * 退出登录
+     */
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            $.ajax({
+                url: `${baseUrl}/user/logout`,
+                type: "POST",
+                xhrFields: { withCredentials: true },
+                success: function(res) {
+                    if (res.success) {
+                        window.location.href = loginPageUrl;
+                    } else {
+                        alert("退出失败：" + (res.msg || "未知错误"));
+                    }
+                },
+                error: function() {
+                    alert("网络错误，退出失败");
+                }
+            });
+        }
+    }
+
+    /**
+     * 页面初始化
+     */
+    $(document).ready(function() {
+        // 获取登录状态
+        getLoginUserFromSession().catch(() => {
+            console.log("用户未登录");
+        });
+
+        // 加载作者信息
+        loadAuthorInfo();
+
+        // 加载作者文章
+        loadAuthorArticles();
+
+        // 绑定关注按钮事件
+        $("#followBtn").click(toggleFollow);
+
+        // 绑定分页按钮事件
+        $("#prevPage").click(function() {
+            if (currentPage > 1) {
+                loadAuthorArticles(currentPage - 1);
+            }
+        });
+
+        $("#nextPage").click(function() {
+            if (currentPage < totalPages) {
+                loadAuthorArticles(currentPage + 1);
+            }
+        });
+    });
+</script>
+</body>
+</html>

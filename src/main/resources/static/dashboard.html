@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据看板 - 智慧博客</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #1e293b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --navbar-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        /* 高斯模糊顶栏 - 黑色主题 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            height: var(--navbar-height);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--primary-light);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--light);
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-light);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-avatar:hover {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .logout-btn {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 主内容区 */
+        .main-container {
+            max-width: 1280px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 左侧边栏（个人信息） */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .profile-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--light);
+            font-size: 36px;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--light);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-light);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray-light);
+        }
+
+        .menu-list {
+            list-style: none;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-light);
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+        }
+
+        /* 数据看板内容区 */
+        .dashboard-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .dashboard-header {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .home-btn, .write-btn {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .write-btn {
+            background: var(--primary);
+        }
+
+        .home-btn:hover, .write-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .write-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 数据卡片网格 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .data-card {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+        }
+
+        .data-card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-light);
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--gray-light);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-top: 15px;
+        }
+
+        /* 月度数据区域 */
+        .dashboard-grid-full {
+            grid-column: 1 / -1;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--gray-light);
+            font-size: 14px;
+        }
+
+        .loading i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary-light);
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 提示弹窗 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: var(--card-shadow);
+            z-index: 9999;
+            display: none;
+            backdrop-filter: blur(10px);
+            border-left: 4px solid;
+            color: var(--light);
+        }
+
+        .toast.success {
+            border-left-color: #52c41a;
+        }
+
+        .toast.error {
+            border-left-color: #f5222d;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 4%;
+            }
+
+            .nav-menu {
+                gap: 15px;
+            }
+
+            .nav-menu a span {
+                display: none;
+            }
+
+            .username {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+    <script>
+        // 在头部提前定义核心函数
+        function renderDefaultAvatar(el, name) {
+            const firstChar = name.charAt(0) || "我";
+            $(el).css({
+                "background": getRandomColor(),
+                "color": "white",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center"
+            }).attr("src", "").text(firstChar);
+        }
+
+        function getRandomColor() {
+            const colors = ["#6366f1", "#818cf8", "#ec4899", "#f472b6"];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
+</head>
+<body>
+<!-- 高斯模糊顶栏 - 黑色主题 -->
+<div class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> 智慧博客平台</div>
+    <nav>
+        <ul class="nav-menu">
+            <li><a href="home.html"><i class="fas fa-home"></i> <span>首页</span></a></li>
+            <li><a href="discover.html"><i class="fas fa-compass"></i> <span>发现</span></a></li>
+            <li><a href="topics.html"><i class="fas fa-comments"></i> <span>话题</span></a></li>
+        </ul>
+    </nav>
+    <div class="user-info">
+        <img id="headerAvatar" class="header-avatar" src="" alt="我的头像" onerror="renderDefaultAvatar(this, $('#headerUserName').text() || '我')">
+        <span class="username" id="headerUserName">加载中...</span>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>退出</span></button>
+    </div>
+</div>
+
+<!-- 主内容区 -->
+<div class="main-container">
+    <!-- 左侧边栏（个人信息） -->
+    <aside class="sidebar">
+        <div class="profile-card">
+            <img id="profileAvatar" class="profile-avatar" src="" alt="用户头像" onerror="renderDefaultAvatar(this, $('#profileUserName').text() || '我')">
+            <h3 id="profileUserName" class="profile-name">加载中...</h3>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div id="articleCount" class="stat-value">0</div>
+                    <div class="stat-label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div id="followerCount" class="stat-value">0</div>
+                    <div class="stat-label">粉丝</div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="menu-list">
+            <li class="menu-item" onclick="window.location.href='personal.html'"><i class="fas fa-user"></i> 个人中心</li>
+            <li class="menu-item" onclick="window.location.href='my-articles.html'"><i class="fas fa-file-alt"></i> 我的文章</li>
+            <li class="menu-item" onclick="window.location.href='my-comments.html'"><i class="fas fa-comment-dots"></i> 我的评论</li>
+            <li class="menu-item" onclick="window.location.href='follow-manage.html'"><i class="fas fa-user-friends"></i> 关注管理</li>
+            <li class="menu-item active"><i class="fas fa-chart-line"></i> 数据看板</li>
+            <li class="menu-item" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i> 账号设置</li>
+        </ul>
+    </aside>
+
+    <!-- 数据看板内容区 -->
+    <main class="dashboard-area">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title"><i class="fas fa-chart-line"></i> 数据看板</h2>
+            <div class="header-actions">
+                <button class="home-btn" onclick="window.location.href='home.html'"><i class="fas fa-home"></i> 返回主页</button>
+                <button class="write-btn" onclick="window.location.href='write.html'"><i class="fas fa-pen"></i> 写新文章</button>
+            </div>
+        </div>
+
+        <!-- 数据卡片网格 -->
+        <div class="dashboard-grid">
+            <!-- 文章统计卡片 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h3 class="card-title">文章统计</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="totalArticles">0</div>
+                <div class="card-description">已发布文章总数</div>
+                <div class="chart-container">
+                    <canvas id="articleStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 粉丝互动卡片 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h3 class="card-title">粉丝互动</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="totalFollowers">0</div>
+                <div class="card-description">总粉丝数</div>
+                <div class="chart-container">
+                    <canvas id="followerGrowthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 文章互动卡片 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h3 class="card-title">文章互动</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="totalLikes">0</div>
+                <div class="card-description">总获赞数</div>
+                <div class="chart-container">
+                    <canvas id="articleInteractionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 月度数据区域 -->
+        <div class="dashboard-grid">
+            <div class="data-card dashboard-grid-full">
+                <div class="card-header">
+                    <h3 class="card-title">月度文章发布趋势</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 提示弹窗 -->
+<div id="toast" class="toast">
+    <span id="toastMsg">操作提示</span>
+</div>
+
+<script>
+    // 基础配置（对接后端地址）
+    const baseUrl = "http://localhost:9999";
+    const defaultAvatar = `${baseUrl}/uploads/default-avatar.png`;
+    const loginPage = "login.html";
+    let loginUser = null; // 存储当前登录用户信息
+    let userId = 0;       // 当前登录用户ID
+    let myArticles = [];  // 存储用户文章数据
+
+    // 图表实例引用（已移除热门标签相关）
+    const chartInstances = {
+        articleStatus: null,
+        followerGrowth: null,
+        articleInteraction: null,
+        monthlyTrend: null
+    };
+
+    // 页面加载初始化
+    $(document).ready(function() {
+        // 1. 先获取当前用户信息
+        getUserInfo()
+            .then(() => {
+                userId = loginUser.id; // 保存用户ID
+                // 2. 渲染个人信息（头像、用户名）
+                renderProfileInfo();
+                // 3. 获取并渲染文章列表
+                getMyArticles()
+                    .then(() => {
+                        // 4. 获取并渲染粉丝数
+                        getFollowerCount();
+                        // 5. 获取并渲染文章数
+                        getArticleCount();
+                        // 6. 获取统计数据并初始化图表（已移除热门标签调用）
+                        getArticleStats();
+                        getFollowerGrowth();
+                        getArticleInteraction();
+                    });
+            })
+            .catch((err) => {
+                showToast(err, "error");
+                // 未登录，3秒后跳转登录页
+                setTimeout(() => {
+                    window.location.href = loginPage;
+                }, 3000);
+            });
+    });
+
+    /**
+     * 1. 接口：获取当前用户信息（对接 UserController /user/info）
+     */
+    function getUserInfo() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `${baseUrl}/user/info`,
+                type: "GET",
+                xhrFields: { withCredentials: true }, // 携带Session登录态
+                success: (res) => {
+                    if (res.success && res.data) {
+                        loginUser = res.data;
+                        resolve();
+                    } else {
+                        reject(res.msg || "获取用户信息失败");
+                    }
+                },
+                error: () => {
+                    reject("网络异常，无法获取用户信息");
+                }
+            });
+        });
+    }
+
+    /**
+     * 2. 接口：获取我的文章列表（对接 ArticleController /article/my）
+     */
+    function getMyArticles() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `${baseUrl}/article/my`,
+                type: "GET",
+                xhrFields: { withCredentials: true }, // 后端通过Session获取userId
+                success: (res) => {
+                    if (res.success) {
+                        myArticles = res.data;
+                        resolve();
+                    } else {
+                        reject("获取文章列表失败");
+                    }
+                },
+                error: () => {
+                    reject("网络异常，无法获取文章列表");
+                }
+            });
+        });
+    }
+
+    /**
+     * 3. 接口：获取粉丝数（对接 UserController /user/followerCount）
+     */
+    function getFollowerCount() {
+        $.ajax({
+            url: `${baseUrl}/user/followerCount`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            success: (res) => {
+                if (res.success) {
+                    $("#followerCount").text(res.data);
+                    $("#totalFollowers").text(res.data);
+                }
+            },
+            error: () => {
+                $("#followerCount").text("未知");
+                $("#totalFollowers").text("未知");
+            }
+        });
+    }
+
+    /**
+     * 4. 接口：获取文章数（通过/my接口的length计算）
+     */
+    function getArticleCount() {
+        const publishedArticles = myArticles.filter(article => article.status === "published");
+        $("#articleCount").text(publishedArticles.length);
+        $("#totalArticles").text(publishedArticles.length);
+    }
+
+    /**
+     * 5. 接口：获取文章统计数据（新增接口）
+     */
+    function getArticleStats() {
+        $.ajax({
+            url: `${baseUrl}/article/stats`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            success: (res) => {
+                if (res.success) {
+                    const data = res.data;
+                    // 更新文章状态图表
+                    updateArticleStatusChart(data.publishedCount, data.draftCount);
+                    // 更新月度趋势图表
+                    updateMonthlyTrendChart(data.monthlyTrend);
+                    // 更新总点赞数
+                    $("#totalLikes").text(data.totalLikes);
+                }
+            },
+            error: (err) => {
+                console.error("获取文章统计数据失败:", err);
+                // 使用模拟数据作为备选
+                const publishedCount = myArticles.filter(a => a.status === "published").length;
+                const draftCount = myArticles.filter(a => a.status === "draft").length;
+                updateArticleStatusChart(publishedCount, draftCount);
+
+                // 模拟月度趋势数据
+                const monthlyTrend = {
+                    "1月": 3, "2月": 5, "3月": 7, "4月": 4,
+                    "5月": 6, "6月": 8, "7月": 5, "8月": 7,
+                    "9月": 9, "10月": 6, "11月": 8, "12月": 10
+                };
+                updateMonthlyTrendChart(monthlyTrend);
+            }
+        });
+    }
+
+    /**
+     * 6. 接口：获取粉丝增长数据（新增接口）
+     */
+    function getFollowerGrowth() {
+        $.ajax({
+            url: `${baseUrl}/user/followerGrowth`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            success: (res) => {
+                if (res.success) {
+                    updateFollowerGrowthChart(res.data.growthData);
+                }
+            },
+            error: (err) => {
+                console.error("获取粉丝增长数据失败:", err);
+                // 使用模拟数据作为备选
+                const growthData = [5, 8, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50];
+                updateFollowerGrowthChart(growthData);
+            }
+        });
+    }
+
+    /**
+     * 7. 接口：获取文章互动数据（新增接口）
+     */
+    function getArticleInteraction() {
+        $.ajax({
+            url: `${baseUrl}/article/interaction`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            success: (res) => {
+                if (res.success) {
+                    updateArticleInteractionChart(res.data);
+                }
+            },
+            error: (err) => {
+                console.error("获取文章互动数据失败:", err);
+                // 使用模拟数据作为备选
+                const interactionData = [
+                    { title: "文章1", likeCount: 12, commentCount: 5 },
+                    { title: "文章2", likeCount: 19, commentCount: 12 },
+                    { title: "文章3", likeCount: 8, commentCount: 6 },
+                    { title: "文章4", likeCount: 15, commentCount: 9 },
+                    { title: "文章5", likeCount: 22, commentCount: 14 },
+                    { title: "文章6", likeCount: 17, commentCount: 10 },
+                    { title: "文章7", likeCount: 25, commentCount: 18 }
+                ];
+                updateArticleInteractionChart(interactionData);
+            }
+        });
+    }
+
+    /**
+     * 图表初始化函数（已移除热门标签图表）
+     */
+
+    // 文章状态分布图
+    function updateArticleStatusChart(publishedCount, draftCount) {
+        const ctx = document.getElementById('articleStatusChart').getContext('2d');
+
+        // 销毁现有图表（如果存在）
+        if (chartInstances.articleStatus) {
+            chartInstances.articleStatus.destroy();
+        }
+
+        chartInstances.articleStatus = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['已发布', '草稿'],
+                datasets: [{
+                    data: [publishedCount, draftCount],
+                    backgroundColor: ['#52c41a', '#faad14'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 粉丝增长图
+    function updateFollowerGrowthChart(growthData) {
+        const ctx = document.getElementById('followerGrowthChart').getContext('2d');
+
+        // 销毁现有图表（如果存在）
+        if (chartInstances.followerGrowth) {
+            chartInstances.followerGrowth.destroy();
+        }
+
+        chartInstances.followerGrowth = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                datasets: [{
+                    label: '粉丝增长',
+                    data: growthData,
+                    borderColor: '#818cf8',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 文章互动图
+    function updateArticleInteractionChart(interactionData) {
+        const likesData = interactionData.map(item => item.likeCount);
+        const commentsData = interactionData.map(item => item.commentCount);
+        const articles = interactionData.map(item => item.title);
+
+        // 计算总点赞数
+        const totalLikes = likesData.reduce((acc, val) => acc + val, 0);
+        $("#totalLikes").text(totalLikes);
+
+        const ctx = document.getElementById('articleInteractionChart').getContext('2d');
+
+        // 销毁现有图表（如果存在）
+        if (chartInstances.articleInteraction) {
+            chartInstances.articleInteraction.destroy();
+        }
+
+        chartInstances.articleInteraction = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: articles,
+                datasets: [
+                    {
+                        label: '点赞数',
+                        data: likesData,
+                        backgroundColor: '#ec4899'
+                    },
+                    {
+                        label: '评论数',
+                        data: commentsData,
+                        backgroundColor: '#6366f1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 月度趋势图
+    function updateMonthlyTrendChart(monthlyTrend) {
+        const monthlyData = Object.values(monthlyTrend);
+        const months = Object.keys(monthlyTrend);
+
+        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+
+        // 销毁现有图表（如果存在）
+        if (chartInstances.monthlyTrend) {
+            chartInstances.monthlyTrend.destroy();
+        }
+
+        chartInstances.monthlyTrend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: '文章发布数量',
+                    data: monthlyData,
+                    borderColor: '#818cf8',
+                    backgroundColor: 'rgba(129, 140, 248, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 2,
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 渲染个人信息（头像、用户名）
+     */
+    function renderProfileInfo() {
+        // 1. 用户名处理
+        const username = (loginUser.username || "未知用户").trim();
+        $("#headerUserName").text(username);
+        $("#profileUserName").text(username);
+
+        // 2. 头像处理
+        let avatarUrl = loginUser.avatarUrl || "";
+        avatarUrl = avatarUrl.trim();
+
+        const isAbsoluteUrl = avatarUrl.toLowerCase().startsWith("http");
+        let finalAvatarUrl;
+        if (isAbsoluteUrl) {
+            finalAvatarUrl = avatarUrl;
+        } else if (avatarUrl) {
+            finalAvatarUrl = `${baseUrl}/${avatarUrl.replace(/^\/+/, "")}`;
+        } else {
+            finalAvatarUrl = defaultAvatar;
+        }
+
+        // 3. 处理顶栏头像
+        $("#headerAvatar")
+            .attr("src", finalAvatarUrl)
+            .on("error", function() {
+                renderDefaultAvatar(this, username);
+            });
+
+        // 4. 处理左侧圆形头像
+        const $profileAvatar = $("#profileAvatar");
+        $profileAvatar
+            .attr("src", finalAvatarUrl)
+            .css({
+                "background": "transparent !important",
+                "overflow": "hidden"
+            })
+            .on("error", function() {
+                renderDefaultAvatar(this, username);
+            });
+    }
+
+    /**
+     * 退出登录（对接 UserController /user/logout）
+     */
+    function logout() {
+        if (!confirm("确定要退出登录吗？")) {
+            return;
+        }
+        $.ajax({
+            url: `${baseUrl}/user/logout`,
+            type: "POST",
+            xhrFields: { withCredentials: true },
+            success: (res) => {
+                if (res.success) {
+                    window.location.href = loginPage;
+                } else {
+                    showToast(res.msg || "退出失败", "error");
+                }
+            },
+            error: () => {
+                showToast("网络异常，退出失败", "error");
+            }
+        });
+    }
+
+    /**
+     * 辅助函数：显示提示弹窗
+     */
+    function showToast(msg, type = "success") {
+        const $toast = $("#toast");
+        const $toastMsg = $("#toastMsg");
+        $toastMsg.text(msg);
+        $toast.removeClass("success error").addClass(type);
+        $toast.fadeIn();
+        // 3秒后隐藏
+        setTimeout(() => {
+            $toast.fadeOut();
+        }, 3000);
+    }
+</script>
+</body>
+</html>

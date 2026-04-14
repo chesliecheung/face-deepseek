@@ -1,0 +1,30 @@
+server:
+  port: 9999
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: '030918'
+  session:
+    timeout: 86400 # 24小时
+
+  redis:
+    host: localhost
+    port: 6379
+    password: abc123456
+    database: 0
+
+deepseek:
+  api:  # 缩进 2 个空格（YAML 标准缩进，不可用 Tab）
+    url: http://localhost:11434/api/chat  # 冒号后必须有 1 个空格，URL 格式正确（http:// 不可少）
+    model: deepseek-r1:1.5b  #
+
+
+
+
+
+

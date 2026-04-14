@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>多种方式登录 | 知途智慧博客</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        /* 1. 基础重置 & 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: url("../img/b1.png") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 80px; /* 为固定顶栏预留空间 */
+            padding-bottom: 20px; /* 底栏随滚动，仅保留基础留白 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 2. 顶部导航栏：与注册页一致的黑色透明高斯模糊 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 导航栏logo位置 */
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* 导航链接样式 */
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav ul li a:hover {
+            color: #4A00E0;
+            border-bottom: 2px solid #4A00E0;
+        }
+
+        /* 3. 核心登录容器：改小+背景模糊 */
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.08); /* 半透明白色背景 */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            width: 100%;
+            max-width: 750px; /* 卡片改小（原900px→750px） */
+            border-radius: 10px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+            padding: 20px; /* 内边距减少（原30px→20px） */
+            transition: box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 40px 0;
+        }
+
+        .login-container:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 4. 标题样式：同步紫色主题 */
+        .form-title {
+            font-size: 20px; /* 标题缩小（原24px→20px） */
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-title::after {
+            content: "";
+            display: block;
+            width: 35px; /* 下划线缩短 */
+            height: 2px;
+            background-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            border-radius: 3px;
+            margin: 6px 0 0;
+        }
+
+        .form-icon {
+            color: #4A00E0; /* 标题图标同步紫色 */
+        }
+
+        /* 5. 选项卡样式：紫色主题 */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+            margin-bottom: 20px; /* 间距减少（原25px→20px） */
+        }
+
+        .tab {
+            padding: 8px 16px; /* 内边距减少（原10px20px→8px16px） */
+            cursor: pointer;
+            font-size: 14px; /* 字体缩小（原15px→14px） */
+            font-weight: 500;
+            color: #e0e0e0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #4A00E0;
+        }
+
+        .tab.active {
+            color: #4A00E0;
+        }
+
+        .tab.active::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* 6. 表单内容区域：动画保留 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 7. 双栏布局（人脸登录）：间距调整 */
+        .two-column {
+            display: flex;
+            gap: 20px; /* 间距减少（原30px→20px） */
+        }
+
+        .form-section {
+            flex: 1 1 60%;
+        }
+
+        .face-section {
+            flex: 1 1 40%;
+        }
+
+        /* 8. 表单组：间距调整 + 错误提示容器 */
+        .form-group {
+            margin-bottom: 15px; /* 间距减少（原22px→15px） */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group-header {
+            display: flex;
+            align-items: center;
+            gap: 6px; /* 间距减少（原8px→6px） */
+            margin-bottom: 6px; /* 间距减少（原8px→6px） */
+        }
+
+        .form-label {
+            font-size: 13px; /* 字体缩小（原14px→13px） */
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        /* 9. 输入框样式：半透明背景 */
+        .form-input {
+            width: 100%;
+            padding: 8px 12px; /* 内边距减少（原12px16px→8px12px） */
+            background-color: rgba(255, 255, 255, 0.12); /* 半透明背景 */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+            border-radius: 6px; /* 圆角缩小（原8px→6px） */
+            font-size: 13px; /* 字体缩小（原14px→13px） */
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            box-shadow: 0 0 0 2px rgba(74, 0, 224, 0.2); /* 紫色阴影 */
+        }
+
+        .form-input::placeholder {
+            color: #a1a8b3;
+            font-weight: 400;
+        }
+
+        /* 输入框错误状态 */
+        .form-input.error {
+            border-color: #f53f3f;
+        }
+
+        /* 10. 邮箱+验证码组：间距调整 */
+        .email-group {
+            display: flex;
+            gap: 8px; /* 间距减少（原12px→8px） */
+            align-items: center;
+        }
+
+        .email-input {
+            flex: 1;
+        }
+
+        .btn-verify {
+            padding: 8px 12px; /* 内边距减少（原12px18px→8px12px） */
+            background-color: rgba(255, 255, 255, 0.08); /* 半透明背景 */
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+            border-radius: 6px; /* 圆角缩小（原8px→6px） */
+            font-size: 13px; /* 字体缩小（原14px→13px） */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px; /* 间距减少（原6px→5px） */
+        }
+
+        .btn-verify:hover {
+            background-color: rgba(74, 0, 224, 0.2); /* 紫色 hover 背景 */
+            color: #fff;
+            border-color: #4A00E0;
+        }
+
+        .btn-verify:disabled {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #a1a8b3;
+            cursor: not-allowed;
+        }
+
+        /* 11. 按钮样式：紫色主题 */
+        .btn {
+            width: 100%;
+            padding: 8px 0; /* 内边距减少（原12px0→8px0） */
+            border: none;
+            border-radius: 6px; /* 圆角缩小（原8px→6px） */
+            font-size: 13px; /* 字体缩小（原14px→13px） */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px; /* 间距减少（原8px→6px） */
+        }
+
+        .btn-primary {
+            background-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            color: #ffffff;
+            margin-top: 8px; /* 间距减少（原10px→8px） */
+        }
+
+        .btn-primary:hover {
+            background-color: #3a00c0; /* 紫色加深 hover */
+            box-shadow: 0 3px 10px rgba(74, 0, 224, 0.3); /* 紫色阴影 */
+        }
+
+        .btn-primary:disabled {
+            background-color: rgba(74, 0, 224, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.08); /* 半透明背景 */
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px; /* 间距减少（原12px→8px） */
+            margin-bottom: 14px; /* 间距减少（原16px→14px） */
+        }
+
+        /* 12. 人脸验证区域：半透明背景 */
+        .face-verification {
+            background-color: rgba(255, 255, 255, 0.05); /* 半透明背景 */
+            border-radius: 8px; /* 圆角缩小（原10px→8px） */
+            padding: 18px; /* 内边距减少（原22px→18px） */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .verification-title {
+            font-size: 14px; /* 字体缩小（原15px→14px） */
+            font-weight: 500;
+            color: #e0e0e0;
+            margin-bottom: 14px; /* 间距减少（原16px→14px） */
+            display: flex;
+            align-items: center;
+            gap: 6px; /* 间距减少（原8px→6px） */
+        }
+
+        /* 视频/图片显示：尺寸调整 */
+        #video,
+        #faceImage {
+            max-width: 100%;
+            max-height: 150px; /* 高度减少（原220px→150px） */
+            height: auto;
+            border-radius: 5px; /* 圆角缩小（原6px→5px） */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+            margin: 0 auto 14px; /* 间距减少（原16px→14px） */
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+
+        #faceImage {
+            opacity: 0;
+        }
+
+        #faceImage.show {
+            opacity: 1;
+        }
+
+        /* 13. 文件上传按钮：半透明风格 */
+        #fileInput {
+            display: none; /* 强制隐藏原生输入框 */
+        }
+
+        .upload-label {
+            padding: 8px 12px; /* 内边距减少（原12px16px→8px12px） */
+            background-color: rgba(255, 255, 255, 0.08); /* 半透明背景 */
+            border: 1px dashed rgba(255, 255, 255, 0.15); /* 半透明虚线边框 */
+            cursor: pointer;
+            border-radius: 6px; /* 圆角缩小（原8px→6px） */
+            margin-top: 6px; /* 间距减少（原8px→6px） */
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 13px; /* 字体缩小（原14px→13px） */
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px; /* 间距减少（原6px→5px） */
+        }
+
+        .upload-label:hover {
+            border-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            background-color: rgba(74, 0, 224, 0.1);
+            color: #fff;
+        }
+
+        /* 14. 结果反馈区域：紫色主题 */
+        #result {
+            background-color: rgba(74, 0, 224, 0.1); /* 紫色半透明背景 */
+            border: 1px solid rgba(74, 0, 224, 0.15); /* 紫色半透明边框 */
+            border-radius: 6px; /* 圆角缩小（原8px→6px） */
+            padding: 10px; /* 内边距减少（原14px→10px） */
+            font-size: 12px; /* 字体缩小（原13px→12px） */
+            color: #e0e0e0;
+            margin-top: 14px; /* 间距减少（原16px→14px） */
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 40px; /* 高度减少（原60px→40px） */
+        }
+
+        /* 15. 错误提示样式：保留红色 */
+        .error-tip {
+            display: none;
+            font-size: 11px; /* 字体缩小（原12px→11px） */
+            color: #ff6b6b;
+            margin-top: 5px; /* 间距减少（原6px→5px） */
+            display: flex;
+            align-items: center;
+            gap: 3px; /* 间距减少（原4px→3px） */
+        }
+
+        .error-tip.show {
+            display: flex;
+        }
+
+        .error-icon {
+            font-size: 11px;
+        }
+
+        /* 16. 其他链接：紫色主题 */
+        .other-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px; /* 间距减少（原16px→14px） */
+            font-size: 12px; /* 字体缩小（原13px→12px） */
+        }
+
+        .link {
+            color: #4A00E0; /* 替换原蓝色为主题紫 */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .link:hover {
+            color: #6a30f0; /* 紫色变浅 hover */
+            text-decoration: underline;
+        }
+
+        /* 17. 隐藏画布 */
+        #canvas {
+            display: none;
+        }
+
+        /* 18. 复选框样式：紫色主题 */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px; /* 间距减少（原16px→14px） */
+        }
+
+        .custom-checkbox {
+            width: 15px; /* 尺寸缩小（原16px→15px） */
+            height: 15px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* 半透明边框 */
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            margin-right: 6px; /* 间距减少（原8px→6px） */
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox.checked {
+            background-color: #4A00E0; /* 替换原蓝色为主题紫 */
+            border-color: #4A00E0;
+        }
+
+        .custom-checkbox.checked::after {
+            content: "\f00c";
+            font-family: "FontAwesome";
+            color: white;
+            font-size: 11px; /* 字体缩小（原12px→11px） */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .checkbox-label {
+            font-size: 12px; /* 字体缩小（原13px→12px） */
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        /* 19. 人脸状态提示：调整颜色 */
+        .face-status {
+            margin-top: 8px; /* 间距减少（原10px→8px） */
+            text-align: center;
+            font-size: 12px; /* 字体缩小（原13px→12px） */
+            padding: 6px; /* 内边距减少（原8px→6px） */
+            border-radius: 5px; /* 圆角缩小（原6px→5px） */
+        }
+
+        .face-status.ready {
+            color: #4cd964;
+            background-color: rgba(76, 217, 100, 0.1); /* 绿色半透明背景 */
+            border: 1px solid rgba(76, 217, 100, 0.2);
+        }
+
+        .face-status.not-ready {
+            color: #ffcc00;
+            background-color: rgba(255, 204, 0, 0.1); /* 黄色半透明背景 */
+            border: 1px solid rgba(255, 204, 0, 0.2);
+        }
+
+        /* 20. 页脚区域：完善内容，与注册页一致 */
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 40px 5%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            position: static; /* 随滚动显示，不固定 */
+            margin-top: 60px; /* 与登录容器保持距离 */
+            width: 100%;
+        }
+
+        .footer-col {
+            margin-bottom: 24px;
+            min-width: 160px;
+        }
+
+        .footer-col h3 {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-col ul li a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #4A00E0;
+        }
+
+        .copyright {
+            width: 100%;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* 21. 响应式适配：同步调整 */
+        @media (max-width: 768px) {
+            .login-container {
+                max-width: 400px; /* 小屏最大宽度（原500px→400px） */
+                padding: 18px; /* 小屏内边距减少 */
+            }
+
+            .two-column {
+                flex-direction: column;
+                gap: 15px; /* 小屏间距减少（原25px→15px） */
+            }
+
+            .email-group {
+                flex-direction: column;
+                gap: 6px; /* 小屏间距减少（原8px→6px） */
+            }
+
+            .btn-verify {
+                width: 100%;
+            }
+
+            #video,
+            #faceImage {
+                max-height: 130px; /* 小屏高度减少（原180px→130px） */
+            }
+
+            footer {
+                padding: 20px 5%;
+                margin-top: 40px; /* 小屏底栏间距减少 */
+            }
+
+            /* 小屏顶栏导航间距减少 */
+            nav ul {
+                gap: 15px;
+            }
+
+            .logo-text {
+                font-size: 24px; /* 小屏logo字体缩小 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header>
+        <a href="index.html" class="logo">
+            <img src="../img/logo.PNG" alt="知途AIlogo" class="logo-img">
+            <span class="logo-text">知途智慧博客</span>
+        </a>
+        
+        <nav>
+            <ul>
+                <li><a href="index.html">主页</a></li>
+                <li><a href="ai-chat.html">对话</a></li>
+                <li><a href="#">关于我们</a></li>
+                <li><a href="register.html">注册</a></li>
+                <li><a href="#" class="active">登录</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Vue 根容器：登录主体 -->
+    <div id="app" class="login-container">
+        <h2 class="form-title">
+            <i class="fa fa-sign-in form-icon"></i>
+            账户登录
+        </h2>
+
+        <!-- 登录方式 Tabs -->
+        <div class="tabs">
+            <div class="tab" :class="{ active: activeTab === 'username' }" @click="switchTab('username')">
+                <i class="fa fa-user"></i> 用户名密码登录
+            </div>
+            <div class="tab" :class="{ active: activeTab === 'email' }" @click="switchTab('email')">
+                <i class="fa fa-envelope"></i> 邮箱验证码登录
+            </div>
+            <div class="tab" :class="{ active: activeTab === 'face' }" @click="switchTab('face')">
+                <i class="fa fa-id-card"></i> 人脸登录
+            </div>
+        </div>
+
+        <!-- 1. 用户名密码登录 -->
+        <div class="tab-content" :class="{ active: activeTab === 'username' }">
+            <form @submit.prevent="submitUsernameLogin">
+                <!-- 用户名 -->
+                <div class="form-group">
+                    <div class="form-group-header">
+                        <i class="fa fa-user form-icon"></i>
+                        <label class="form-label">用户名</label>
+                    </div>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        :class="{ error: usernameError.show }"
+                        placeholder="请输入用户名（3-20位字符）" 
+                        v-model="usernameForm.username"
+                        @blur="validateUsername"
+                    />
+                    <div class="error-tip" :class="{ show: usernameError.show }">
+                        <i class="fa fa-exclamation-circle error-icon"></i>
+                        {{ usernameError.msg }}
+                    </div>
+                </div>
+                <!-- 密码 -->
+                <div class="form-group">
+                    <div class="form-group-header">
+                        <i class="fa fa-lock form-icon"></i>
+                        <label class="form-label">密码</label>
+                    </div>
+                    <input 
+                        type="password" 
+                        class="form-input" 
+                        :class="{ error: passwordError.show }"
+                        placeholder="请输入密码（6-20位字符）" 
+                        v-model="usernameForm.password"
+                        @blur="validatePassword"
+                    />
+                    <div class="error-tip" :class="{ show: passwordError.show }">
+                        <i class="fa fa-exclamation-circle error-icon"></i>
+                        {{ passwordError.msg }}
+                    </div>
+                </div>
+                <!-- 记住登录 -->
+                <div class="checkbox-group">
+                    <div class="custom-checkbox" :class="{ checked: rememberLogin }" @click="rememberLogin = !rememberLogin"></div>
+                    <label class="checkbox-label">记住登录状态（7天）</label>
+                </div>
+                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                    <i class="fa" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                    {{ isSubmitting ? '登录中...' : '登录' }}
+                </button>
+                <pre id="result" v-text="loginResult" :style="{ color: loginResultColor }"></pre>
+                <!-- 其他链接 -->
+                <div class="other-links">
+                    <a href="#" class="link">忘记密码？</a>
+                    <a href="#" class="link">还没有账号？立即注册</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. 邮箱验证码登录 -->
+        <div class="tab-content" :class="{ active: activeTab === 'email' }">
+            <form @submit.prevent="submitEmailLogin">
+                <div class="form-group">
+                    <div class="form-group-header">
+                        <i class="fa fa-envelope form-icon"></i>
+                        <label class="form-label">邮箱</label>
+                    </div>
+                    <div class="email-group">
+                        <input 
+                            type="email" 
+                            class="form-input email-input" 
+                            :class="{ error: emailError.show }"
+                            placeholder="请输入您的邮箱" 
+                            v-model="emailForm.email"
+                            @blur="validateEmail"
+                        />
+                        <button 
+                            type="button" 
+                            class="btn-verify" 
+                            @click="getEmailVerifyCode"
+                            :disabled="verifyBtnDisabled || isSubmitting"
+                        >
+                            <i class="fa" :class="verifyBtnIcon"></i> {{ verifyBtnText }}
+                        </button>
+                    </div>
+                    <div class="error-tip" :class="{ show: emailError.show }">
+                        <i class="fa fa-exclamation-circle error-icon"></i>
+                        {{ emailError.msg }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-group-header">
+                        <i class="fa fa-shield form-icon"></i>
+                        <label class="form-label">验证码</label>
+                    </div>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        :class="{ error: codeError.show }"
+                        placeholder="请输入6位验证码" 
+                        v-model="emailForm.verifyCode"
+                        @blur="validateCode"
+                    />
+                    <div class="error-tip" :class="{ show: codeError.show }">
+                        <i class="fa fa-exclamation-circle error-icon"></i>
+                        {{ codeError.msg }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                    <i class="fa" :class="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                    {{ isSubmitting ? '登录中...' : '登录' }}
+                </button>
+                <pre id="result" v-text="loginResult" :style="{ color: loginResultColor }"></pre>
+            </form>
+        </div>
+
+        <!-- 3. 人脸登录 -->
+        <div class="tab-content" :class="{ active: activeTab === 'face' }">
+            <div class="two-column">
+                <div class="form-section">
+                    <form @submit.prevent="submitFaceLogin">
+                        <div class="face-status" :class="faceReady ? 'ready' : 'not-ready'">
+                            <i class="fa" :class="faceReady ? 'fa-check-circle' : 'fa-info-circle'"></i>
+                            {{ faceReady ? '人脸已捕获，可以登录' : '请在右侧拍照或上传人脸图片' }}
+                        </div>
+                        <!-- 人脸登录提示 -->
+                        <div class="error-tip" :class="{ show: faceError.show }">
+                            <i class="fa fa-exclamation-circle error-icon"></i>
+                            {{ faceError.msg }}
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="btn btn-primary" 
+                            :disabled="!faceReady || faceLoginLoading || isSubmitting"
+                        >
+                            <i class="fa" :class="faceLoginLoading ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                            {{ faceLoginLoading ? '登录中...' : '人脸验证登录' }}
+                        </button>
+                        <pre id="result" v-text="loginResult" :style="{ color: loginResultColor }"></pre>
+                        <!-- 其他链接 -->
+                        <div class="other-links">
+                            <a href="#" class="link">人脸登录失败？</a>
+                            <a href="#" class="link">使用其他方式登录</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 摄像头区域 -->
+                <div class="face-section">
+                    <div class="face-verification">
+                        <!-- 摄像头视频流 -->
+                        <video id="video" autoplay playsinline v-show="showVideo && !faceImage"></video>
+                        <!-- 画布（隐藏） -->
+                        <canvas id="canvas"></canvas>
+                        <!-- 捕获/上传的人脸图片 -->
+                        <img id="faceImage" v-if="faceImage" :src="faceImage" class="show" alt="人脸照片" />
+                        <!-- 摄像头操作按钮组 -->
+                        <div class="btn-group">
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary" 
+                                @click="startCamera"
+                                :disabled="isSubmitting"
+                            >
+                                <i class="fa fa-video-camera"></i> 打开摄像头
+                            </button>
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary" 
+                                @click="capturePhoto"
+                                :disabled="!mediaStream || isSubmitting"
+                            >
+                                <i class="fa fa-camera"></i> 拍照
+                            </button>
+                        </div>
+                        <!-- 重新拍摄按钮（有图片时显示） -->
+                        <button 
+                            type="button" 
+                            class="btn btn-secondary" 
+                            v-if="faceImage"
+                            @click="resetFaceCapture"
+                            :disabled="isSubmitting"
+                        >
+                            <i class="fa fa-refresh"></i> 重新拍摄/上传
+                        </button>
+                        <!-- 图片上传 -->
+                        <label for="fileInput" class="upload-label" :disabled="isSubmitting">
+                            <i class="fa fa-upload"></i> 上传图片
+                        </label>
+                        <input 
+                            type="file" 
+                            id="fileInput" 
+                            accept="image/*" 
+                            @change="handleFileUpload"
+                            :disabled="isSubmitting"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚（完善内容） -->
+    <footer>
+        <div class="footer-col">
+            <h3>产品服务</h3>
+            <ul>
+                <li><a href="#">AI对话助手</a></li>
+                <li><a href="#">图像识别</a></li>
+                <li><a href="#">语音转文字</a></li>
+                <li><a href="#">智能翻译</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>关于我们</h3>
+            <ul>
+                <li><a href="#">公司介绍</a></li>
+                <li><a href="#">团队成员</a></li>
+                <li><a href="#">发展历程</a></li>
+                <li><a href="#">加入我们</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>帮助中心</h3>
+            <ul>
+                <li><a href="#">使用指南</a></li>
+                <li><a href="#">常见问题</a></li>
+                <li><a href="#">联系客服</a></li>
+                <li><a href="#">意见反馈</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h3>联系我们</h3>
+            <ul>
+                <li><a href="mailto:support@zhituai.com">support@zhituai.com</a></li>
+                <li><a href="tel:400-123-4567">400-123-4567</a></li>
+                <li><a href="#">微信公众号：知途AI</a></li>
+                <li><a href="#">微博：@知途AI官方</a></li>
+            </ul>
+        </div>
+        <div class="copyright">
+            © 2024 知途AI 版权所有 | 京ICP备12345678号 | 京公网安备11010102000001号
+        </div>
+    </footer>
+
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                // 基础状态
+                activeTab: "username", // 当前激活的登录标签
+                isSubmitting: false, // 全局提交加载状态
+                loginResult: "", // 登录结果提示
+                loginResultColor: "#1d2129", // 提示文字颜色
+
+                // 用户名密码登录表单
+                usernameForm: {
+                    username: "",
+                    password: ""
+                },
+                // 表单错误提示（用户名/密码）
+                usernameError: { show: false, msg: "" },
+                passwordError: { show: false, msg: "" },
+                rememberLogin: false, // 记住登录状态
+
+                // 邮箱验证码登录表单
+                emailForm: {
+                    email: "",
+                    verifyCode: ""
+                },
+                // 表单错误提示（邮箱/验证码）
+                emailError: { show: false, msg: "" },
+                codeError: { show: false, msg: "" },
+                // 验证码按钮状态
+                verifyBtnDisabled: false,
+                verifyBtnText: "获取验证码",
+                verifyBtnIcon: "fa-paper-plane",
+                countdown: 60,
+                timer: null,
+
+                // 人脸登录相关
+                mediaStream: null, // 摄像头流对象
+                faceImage: "", // 人脸图片URL
+                faceBase64: "", // 人脸图片Base64（用于接口提交）
+                faceReady: false, // 人脸是否已捕获
+                faceLoginLoading: false, // 人脸登录加载状态
+                faceLoginLastAttempt: 0, // 上次人脸登录时间（防频繁提交）
+                faceError: { show: false, msg: "" } // 人脸登录错误提示
+            },
+            methods: {
+                /**
+                 * 切换登录标签
+                 * @param {string} tab - 标签名（username/email/face）
+                 */
+                switchTab(tab) {
+                    this.activeTab = tab;
+                    // 切换标签时重置状态
+                    this.loginResult = "";
+                    this.loginResultColor = "#1d2129";
+                    this.resetFormErrors();
+                    // 人脸标签切换时关闭摄像头
+                    if (tab !== "face" && this.mediaStream) {
+                        this.stopCamera();
+                    }
+                },
+
+                /**
+                 * 重置所有表单错误提示
+                 */
+                resetFormErrors() {
+                    this.usernameError = { show: false, msg: "" };
+                    this.passwordError = { show: false, msg: "" };
+                    this.emailError = { show: false, msg: "" };
+                    this.codeError = { show: false, msg: "" };
+                    this.faceError = { show: false, msg: "" };
+                },
+
+                // ------------------------------ 用户名密码登录 ------------------------------
+                /**
+                 * 验证用户名
+                 */
+                validateUsername() {
+                    const username = this.usernameForm.username.trim();
+                    if (!username) {
+                        this.usernameError = { show: true, msg: "用户名不能为空" };
+                    } else if (username.length < 3 || username.length > 20) {
+                        this.usernameError = { show: true, msg: "用户名长度需在3-20位之间" };
+                    } else {
+                        this.usernameError = { show: false, msg: "" };
+                    }
+                },
+
+                /**
+                 * 验证密码
+                 */
+                validatePassword() {
+                    const password = this.usernameForm.password.trim();
+                    if (!password) {
+                        this.passwordError = { show: true, msg: "密码不能为空" };
+                    } else if (password.length < 6 || password.length > 20) {
+                        this.passwordError = { show: true, msg: "密码长度需在6-20位之间" };
+                    } else {
+                        this.passwordError = { show: false, msg: "" };
+                    }
+                },
+
+                /**
+                 * 提交用户名密码登录
+                 */
+                async submitUsernameLogin() {
+                    // 前端验证
+                    this.validateUsername();
+                    this.validatePassword();
+                    if (this.usernameError.show || this.passwordError.show) {
+                        return;
+                    }
+
+                    // 提交状态
+                    this.isSubmitting = true;
+                    this.loginResult = "正在登录...";
+                    this.loginResultColor = "#1d2129";
+
+                    try {
+                        const resp = await fetch("http://localhost:9999/user/loginByUsername", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                   body: JSON.stringify(this.usernameForm),
+                      credentials: "include" 
+                        });
+
+                        const res = await resp.json();
+                        if (res.success) {
+                            this.loginResult = "登录成功，正在跳转...";
+                            this.loginResultColor = "#00b42a";
+                            // 记住登录状态（示例：本地存储token）
+                            if (this.rememberLogin && res.data?.token) {
+                                localStorage.setItem("zhituai_token", res.data.token);
+                            } else {
+                                sessionStorage.setItem("zhituai_token", res.data.token);
+                            }
+                            // 跳转页面
+                            setTimeout(() => {
+                                window.location.href = "home.html";
+                            }, 1000);
+                        } else {
+                            this.loginResult = res.msg || "用户名或密码错误";
+                            this.loginResultColor = "#f53f3f";
+                        }
+                    } catch (e) {
+                        this.loginResult = `网络错误：${e.message}`;
+                        this.loginResultColor = "#f53f3f";
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                // ------------------------------ 邮箱验证码登录 ------------------------------
+                /**
+                 * 验证邮箱格式
+                 */
+                validateEmail() {
+                    const email = this.emailForm.email.trim();
+                    const emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+                    
+                    if (!email) {
+                        this.emailError = { show: true, msg: "邮箱不能为空" };
+                    } else if (!emailReg.test(email)) {
+                        this.emailError = { show: true, msg: "请输入正确的邮箱格式（如：xxx@xxx.com）" };
+                    } else {
+                        this.emailError = { show: false, msg: "" };
+                    }
+                },
+
+                /**
+                 * 验证验证码
+                 */
+                validateCode() {
+                    const code = this.emailForm.verifyCode.trim();
+                    if (!code) {
+                        this.codeError = { show: true, msg: "验证码不能为空" };
+                    } else if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+                        this.codeError = { show: true, msg: "请输入6位数字验证码" };
+                    } else {
+                        this.codeError = { show: false, msg: "" };
+                    }
+                },
+
+                /**
+                 * 获取邮箱验证码
+                 */
+                async getEmailVerifyCode() {
+                    // 验证邮箱格式
+                    this.validateEmail();
+                    if (this.emailError.show) {
+                        return;
+                    }
+
+                    try {
+                        // 发送验证码请求
+                        const resp = await fetch("http://localhost:9999/mail", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `email=${encodeURIComponent(this.emailForm.email)}&type=login` // 区分登录验证码
+                        });
+
+                        const res = await resp.json();
+                        if (res.success) {
+                            // 验证码发送成功，开始倒计时
+                            this.verifyBtnDisabled = true;
+                            this.verifyBtnText = `重新发送(${this.countdown}s)`;
+                            this.verifyBtnIcon = "fa-clock-o";
+
+                            // 倒计时定时器
+                            this.timer = setInterval(() => {
+                                this.countdown--;
+                                this.verifyBtnText = `重新发送(${this.countdown}s)`;
+                                if (this.countdown <= 0) {
+                                    this.clearVerifyTimer();
+                                }
+                            }, 1000);
+
+                            this.loginResult = "验证码已发送，请注意查收（可能在垃圾邮件中）";
+                            this.loginResultColor = "#00b42a";
+                        } else {
+                            this.loginResult = res.msg || "验证码发送失败，请重试";
+                            this.loginResultColor = "#f53f3f";
+                        }
+                    } catch (e) {
+                        this.loginResult = `网络错误：${e.message}`;
+                        this.loginResultColor = "#f53f3f";
+                    }
+                },
+
+                /**
+                 * 清除验证码倒计时定时器
+                 */
+                clearVerifyTimer() {
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                    }
+                    this.verifyBtnDisabled = false;
+                    this.verifyBtnText = "获取验证码";
+                    this.verifyBtnIcon = "fa-paper-plane";
+                    this.countdown = 60;
+                },
+
+                /**
+                 * 提交邮箱验证码登录
+                 */
+                async submitEmailLogin() {
+                    // 前端验证
+                    this.validateEmail();
+                    this.validateCode();
+                    if (this.emailError.show || this.codeError.show) {
+                        return;
+                    }
+
+                    // 提交状态
+                    this.isSubmitting = true;
+                    this.loginResult = "正在验证并登录...";
+                    this.loginResultColor = "#1d2129";
+
+                    try {
+                        const resp = await fetch("http://localhost:9999/user/loginByEmail", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                email: this.emailForm.email,
+                                code: this.emailForm.verifyCode
+                            })
+                        });
+
+                        const res = await resp.json();
+                        if (res.success) {
+                            this.loginResult = "登录成功，正在跳转...";
+                            this.loginResultColor = "#00b42a";
+                            // 存储token（示例）
+                            sessionStorage.setItem("zhituai_token", res.data?.token || "");
+                            // 跳转页面
+                            setTimeout(() => {
+                                window.location.href = "home.html";
+                            }, 1000);
+                        } else {
+                            this.loginResult = res.msg || "验证码错误或已过期，请重试";
+                            this.loginResultColor = "#f53f3f";
+                        }
+                    } catch (e) {
+                        this.loginResult = `网络错误：${e.message}`;
+                        this.loginResultColor = "#f53f3f";
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                // ------------------------------ 人脸登录 ------------------------------
+                /**
+                 * 打开摄像头
+                 */
+                async startCamera() {
+                    // 先关闭之前的摄像头流
+                    this.stopCamera();
+                    // 重置人脸状态
+                    this.faceImage = "";
+                    this.faceBase64 = "";
+                    this.faceReady = false;
+                    this.faceError = { show: false, msg: "" };
+
+                    try {
+                        // 获取摄像头权限
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: "user" } // 优先使用前置摄像头
+                        });
+                        // 绑定视频流
+                        const video = document.getElementById("video");
+                        video.srcObject = this.mediaStream;
+                        this.showVideo = true;
+                    } catch (e) {
+                        console.error("摄像头访问失败：", e);
+                        this.faceError = { 
+                            show: true, 
+                            msg: "无法访问摄像头，请检查设备权限或浏览器设置" 
+                        };
+                        this.mediaStream = null;
+                        this.showVideo = false;
+                    }
+                },
+
+                /**
+                 * 停止摄像头流
+                 */
+                stopCamera() {
+                    if (this.mediaStream) {
+                        this.mediaStream.getTracks().forEach(track => track.stop());
+                        this.mediaStream = null;
+                    }
+                    this.showVideo = false;
+                },
+
+                /**
+                 * 拍照捕获人脸
+                 */
+                capturePhoto() {
+                    if (!this.mediaStream) return;
+
+                    const video = document.getElementById("video");
+                    const canvas = document.getElementById("canvas");
+                    // 设置画布尺寸与视频一致
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    // 绘制视频帧到画布
+                    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // 转换为Base64
+                    this.faceBase64 = canvas.toDataURL("image/png").split(",")[1];
+                    this.faceImage = `data:image/png;base64,${this.faceBase64}`;
+                    // 更新状态
+                    this.faceReady = true;
+                    this.stopCamera(); // 拍照后关闭摄像头
+                },
+
+                /**
+                 * 上传人脸图片
+                 * @param {Event} e - 文件选择事件
+                 */
+                handleFileUpload(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // 验证文件类型
+                    if (!file.type.startsWith("image/")) {
+                        this.faceError = { show: true, msg: "请选择图片文件（JPG/PNG等）" };
+                        e.target.value = ""; // 清空选择
+                        return;
+                    }
+
+                    // 读取文件
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const result = ev.target.result;
+                        this.faceBase64 = result.split(",")[1];
+                        this.faceImage = result;
+                        this.faceReady = true;
+                        this.faceError = { show: false, msg: "" };
+                    };
+                    reader.onerror = () => {
+                        this.faceError = { show: true, msg: "图片读取失败，请重试" };
+                    };
+                    reader.readAsDataURL(file);
+                    // 清空文件选择器
+                    e.target.value = "";
+                },
+
+                /**
+                 * 重置人脸捕获（重新拍摄/上传）
+                 */
+                resetFaceCapture() {
+                    this.faceImage = "";
+                    this.faceBase64 = "";
+                    this.faceReady = false;
+                    this.faceError = { show: false, msg: "" };
+                    // 重新打开摄像头
+                    this.startCamera();
+                },
+
+                /**
+                 * 提交人脸登录
+                 */
+                async submitFaceLogin() {
+                    if (!this.faceReady || !this.faceBase64) return;
+
+                    // 防频繁提交（2秒内只能一次）
+                    const now = Date.now();
+                    if (now - this.faceLoginLastAttempt < 2000) {
+                        this.faceError = { show: true, msg: "操作过于频繁，请2秒后再试" };
+                        return;
+                    }
+
+                    // 更新状态
+                    this.faceLoginLastAttempt = now;
+                    this.faceLoginLoading = true;
+                    this.loginResult = "正在验证人脸信息...";
+                    this.loginResultColor = "#1d2129";
+                    this.faceError = { show: false, msg: "" };
+
+                    try {
+                        const resp = await fetch("http://localhost:9999/face/loginByCanvas", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                base64: this.faceBase64
+                            })
+                        });
+
+                        const res = await resp.json();
+                        if (res.success) {
+                            this.loginResult = "人脸验证成功，正在跳转...";
+                            this.loginResultColor = "#00b42a";
+                            // 存储token（示例）
+                            sessionStorage.setItem("zhituai_token", res.data?.token || "");
+                            // 跳转页面
+                            setTimeout(() => {
+                                window.location.href = "home.html";
+                            }, 1000);
+                        } else {
+                            // 错误类型区分
+                            let errorMsg = res.msg || "人脸验证失败，请重试";
+                            if (res.msg?.includes("无匹配用户")) {
+                                errorMsg = "未找到匹配的用户，请先注册或使用其他登录方式";
+                            } else if (res.msg?.includes("QPS") || res.msg?.includes("繁忙")) {
+                                errorMsg = "系统繁忙，请5秒后再试";
+                            }
+                            this.loginResult = errorMsg;
+                            this.loginResultColor = "#f53f3f";
+                        }
+                    } catch (e) {
+                        this.loginResult = `网络错误：${e.message}`;
+                        this.loginResultColor = "#f53f3f";
+                    } finally {
+                        this.faceLoginLoading = false;
+                    }
+                }
+            },
+            /**
+             * 生命周期：组件销毁前清理资源
+             */
+            beforeDestroy() {
+                // 清除验证码定时器
+                this.clearVerifyTimer();
+                // 停止摄像头流
+                this.stopCamera();
+            }
+        })
+    </script>
+</body>
+</html>

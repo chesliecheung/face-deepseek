@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知途智慧博客 - AI加持，轻松创作优质内容</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    body {
+      background: url('../img/pinbg.png') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #000;
+      color: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 999;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+    }
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+    }
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      transition: color 0.3s;
+      padding: 5px 0;
+      border-bottom: 2px solid transparent;
+    }
+    nav ul li a:hover {
+      color: #4A00E0;
+      border-bottom: 2px solid #4A00E0;
+    }
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      background: transparent;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 10%;
+      margin-top: 70px;
+    }
+    .blue-bar-left, .blue-bar-right {
+      display: none;
+    }
+    .hero h1 {
+      font-size: 52px;
+      margin-bottom: 24px;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .hero p {
+      font-size: 20px;
+      line-height: 1.6;
+      max-width: 900px;
+      margin-bottom: 50px;
+      opacity: 0.9;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 20px;
+    }
+    .btn {
+      padding: 12px 30px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background-color: #4A00E0;
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);
+    }
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid #fff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(74, 0, 224, 0.4);
+    }
+    .content-section {
+      padding: 80px 5%;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .content-section h2 {
+      font-size: 36px;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .content-section h2::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 3px;
+      background-color: #4A00E0;
+      margin: 15px auto 0;
+    }
+    .card-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .card {
+      width: 300px;
+      padding: 30px;
+      background-color: rgba(26, 26, 26, 0.8);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(74, 0, 224, 0.2);
+      border-color: #4A00E0;
+    }
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 20px;
+      background-color: #4A00E0;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3);
+    }
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #fff;
+    }
+    .card p {
+      color: #ddd;
+      line-height: 1.5;
+    }
+    footer {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 40px 5%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .footer-col {
+      margin-bottom: 24px;
+      min-width: 160px;
+    }
+    .footer-col h3 {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .footer-col ul {
+      list-style: none;
+    }
+    .footer-col ul li {
+      margin-bottom: 8px;
+    }
+    .footer-col ul li a {
+      color: #888;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+    .footer-col ul li a:hover {
+      color: #4A00E0;
+    }
+    .copyright {
+      width: 100%;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<!-- 头部导航：适配博客平台场景 -->
+<header>
+  <a href="#" class="logo">
+    <img src="../img/logo.PNG" alt="知途智慧博客logo" class="logo-img"> <!-- 替换为博客平台logo -->
+    <span class="logo-text">知途智慧博客</span>
+  </a>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">博客首页</a></li>
+      <li><a href="ai-chat.html">AI对话</a></li>
+      <li><a href="">关于我们</a></li>
+      <li><a href="register.html">注册账号</a></li>
+      <li><a href="login.html">登录创作</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- 主视觉区域：突出博客+AI核心卖点 -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>知途智慧博客 - AI加持，轻松写文发帖</h1>
+    <p>无需担心灵感枯竭！知途智慧博客平台依托先进AI技术，为你提供从选题构思、内容创作到排版优化的全流程支持——写干货、发观点、做分享，AI帮你快速产出优质内容，高效传递知识价值。</p>
+    <div class="hero-buttons">
+      <a href="login.html" class="btn btn-primary">立即进入</a> <!-- 跳转博客主页面 -->
+      <a href="ai-chat.html" class="btn btn-secondary">AI对话助手</a> <!-- 新增AI对话按钮 -->
+    </div>
+  </div>
+</section>
+
+<!-- 内容区块：博客平台核心优势（聚焦AI辅助创作） -->
+<section class="content-section">
+  <h2>知途智慧博客核心优势</h2>
+  <div class="card-container">
+    <div class="card">
+      <div class="card-icon"></div> <!-- 建议替换为“AI创作”图标 -->
+      <h3>AI辅助内容生成</h3>
+      <p>输入关键词即可生成选题方向、文章初稿，支持文案润色、逻辑优化，帮你突破创作瓶颈，10分钟完成一篇优质博客。</p>
+    </div>
+    <div class="card">
+      <div class="card-icon"></div> <!-- 建议替换为“智能排版”图标 -->
+      <h3>智能排版一键适配</h3>
+      <p>AI自动识别标题、正文、引用等内容结构，生成美观排版格式，支持多主题切换，无需代码基础也能做出专业博客样式。</p>
+    </div>
+    <div class="card">
+      <div class="card-icon"></div> <!-- 建议替换为“内容优化”图标 -->
+      <h3>发布后智能优化</h3>
+      <p>基于用户阅读数据，AI提供标题优化、标签推荐、内容更新建议，提升博客曝光量与阅读转化率，让优质内容被更多人看见。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚：适配博客平台信息 -->
+<footer>
+  <div class="footer-col">
+    <h3>关于知途智慧博客</h3>
+    <ul>
+      <li><a href="#">平台简介</a></li>
+      <li><a href="#">AI技术优势</a></li>
+      <li><a href="#">发展历程</a></li>
+      <li><a href="#">加入我们</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h3>创作中心</h3>
+    <ul>
+      <li><a href="#">我的博客管理</a></li>
+      <li><a href="#">AI创作工具</a></li>
+      <li><a href="#">素材资源库</a></li>
+      <li><a href="#">博客排版模板</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h3>帮助中心</h3>
+    <ul>
+      <li><a href="#">新手创作指南</a></li>
+      <li><a href="#">AI工具使用说明</a></li>
+      <li><a href="#">反馈建议</a></li>
+      <li><a href="#">客服联系</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h3>关注我们</h3>
+    <ul>
+      <li><a href="#">微信公众号</a></li>
+      <li><a href="#">微博</a></li>
+      <li><a href="#">抖音</a></li>
+      <li><a href="#">创作者社区</a></li>
+    </ul>
+  </div>
+  <div class="copyright">
+    <p>© 2023 知途智慧博客科技有限公司 版权所有 | AI驱动的智慧博客平台服务提供商</p>
+  </div>
+</footer>
+</body>
+</html>

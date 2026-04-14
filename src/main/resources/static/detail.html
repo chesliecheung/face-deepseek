@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章详情 - 智慧博客平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #1e293b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --navbar-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        /* 高斯模糊顶栏 - 黑色主题 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            height: var(--navbar-height);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--primary-light);
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .user-info img:hover {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .navbar .user-info button {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar .user-info button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 主体布局 */
+        .layout {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+            max-width: 1280px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .main {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 文章内容 */
+        .article-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        .article-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 15px;
+            color: var(--light);
+            line-height: 1.3;
+        }
+
+        .article-meta {
+            font-size: 14px;
+            color: var(--gray-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .article-meta img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .article-meta #followBtn {
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .article-meta #followBtn.followed {
+            background: #10b981;
+        }
+
+        .article-meta #followBtn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+        }
+
+        .article-cover {
+            width: 100%;
+            max-height: 450px;
+            object-fit: cover;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--light);
+        }
+
+        .article-content p {
+            margin: 0 0 18px;
+            text-align: justify;
+        }
+
+        .article-content h2, .article-content h3 {
+            margin: 30px 0 18px;
+            color: var(--primary-light);
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .article-content h2::before, .article-content h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2em;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        /* 文章标签区域 */
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 25px 0;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .article-tags .tag-item {
+            padding: 6px 14px;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            font-size: 14px;
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+
+        .article-tags .tag-item:hover {
+            background: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 操作按钮 */
+        .actions {
+            display: flex;
+            gap: 20px;
+            margin: 35px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 25px;
+        }
+
+        .actions button {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--light);
+            backdrop-filter: blur(5px);
+        }
+
+        .actions button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .actions button.liked {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .actions button.liked:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .actions button.collected {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }
+
+        .actions button.collected:hover {
+            background: rgba(245, 158, 11, 0.3);
+        }
+
+        /* 评论区 */
+        .comments {
+            margin-top: 45px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comments h3 {
+            font-size: 22px;
+            margin-bottom: 25px;
+            color: var(--light);
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .comments h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2em;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            font-size: 15px;
+            border-radius: 10px;
+            box-sizing: border-box;
+            color: var(--light);
+            backdrop-filter: blur(5px);
+        }
+
+        .comment-form textarea::placeholder {
+            color: var(--gray-light);
+        }
+
+        .comment-form button {
+            margin-top: 12px;
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 15px;
+        }
+
+        .comment-form button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .comment {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 20px;
+        }
+
+        .comment img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-body {
+            flex: 1;
+        }
+
+        .comment-body .meta {
+            font-size: 13px;
+            color: var(--gray-light);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .comment-body .text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--light);
+        }
+
+        /* 侧边栏 */
+        .sidebar-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .sidebar-card h3 {
+            font-size: 18px;
+            margin-bottom: 18px;
+            padding-left: 12px;
+            color: var(--light);
+            font-weight: 700;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .sidebar-card h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2em;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .sidebar-card .author-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-card .author-info img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-card .author-info .author-name {
+            font-weight: 600;
+            color: var(--light);
+            font-size: 16px;
+        }
+
+        .sidebar-card #sidebarFollowBtn {
+            margin-top: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sidebar-card #sidebarFollowBtn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+        }
+
+        .sidebar-card #sidebarFollowBtn.followed {
+            background: #10b981;
+        }
+
+        .sidebar-card .author-bio {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--gray-light);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-card .related-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-card .related-list li {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .sidebar-card .related-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .sidebar-card .related-list li:hover {
+            color: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        .sidebar-card .related-list .tags-title {
+            font-size: 15px;
+            color: var(--primary-light);
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-card .related-list .tags-title i {
+            font-size: 14px;
+        }
+
+        /* 作者名字链接样式 */
+        .author-link {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .author-link:hover {
+            color: var(--primary-light);
+            text-decoration: underline;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal .modal-card {
+            background: rgba(15, 23, 42, 0.9);
+            width: 450px;
+            max-width: 92%;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        .modal h4 {
+            margin: 0 0 15px;
+            font-size: 19px;
+            color: var(--light);
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .modal h4::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.2em;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .modal p {
+            margin: 0 0 20px;
+            color: var(--gray-light);
+            line-height: 1.6;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            color: var(--light);
+            font-size: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal input::placeholder {
+            color: var(--gray-light);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .modal-actions .primary-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-actions .primary-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-actions .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .modal-actions .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 收藏夹模态框样式 */
+        #collectionModal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        #collectionModal .modal-card {
+            background: rgba(15, 23, 42, 0.9);
+            width: 450px;
+            max-width: 92%;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        #collectionModal h4 {
+            margin: 0 0 15px;
+            font-size: 18px;
+            color: var(--light);
+        }
+
+        #collectionList {
+            max-height: 250px;
+            overflow:auto;
+            margin-bottom: 15px;
+        }
+
+        .collection-item {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding: 12px 8px;
+            border-bottom:1px dashed rgba(255,255,255,0.05);
+            color: var(--light);
+            transition: var(--transition);
+        }
+
+        .collection-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .collection-item:last-child{
+            border-bottom: none;
+        }
+
+        #newCollectionName {
+            width: calc(100% - 120px);
+            padding: 10px;
+            box-sizing:border-box;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--light);
+            backdrop-filter: blur(5px);
+        }
+
+        #newCollectionName::placeholder {
+            color: var(--gray-light);
+        }
+
+        #createCollectionBtn {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        #createCollectionBtn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        #closeCollectionModal {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #closeCollectionModal:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--gray-light);
+        }
+
+        .loading-spinner i {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: var(--primary-light);
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner p {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+            color: var(--gray-light);
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 992px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .article-title {
+                font-size: 24px;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .navbar {
+                padding: 0 4%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .article-header {
+                margin-top: 5px;
+            }
+
+            .article-title {
+                font-size: 22px;
+            }
+
+            .article-cover {
+                max-height: 300px;
+            }
+
+            .comment {
+                gap: 12px;
+            }
+
+            .comment img {
+                width: 38px;
+                height: 38px;
+            }
+
+            .sidebar-card {
+                padding: 16px;
+            }
+
+            .modal .modal-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部导航（当前登录用户头像） -->
+<div class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> 智慧博客平台</div>
+    <div class="user-info">
+        <!-- 登录用户头像（核心元素，ID：userAvatar） -->
+        <img id="userAvatar" src="" alt="当前登录用户的头像" onerror="this.src=defaultAvatar">
+        <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
+    </div>
+</div>
+
+<div class="layout">
+    <!-- 主内容（文章作者头像） -->
+    <div class="main">
+        <div class="article-header">
+            <h1 class="article-title" id="articleTitle">加载中...</h1>
+            <div class="article-meta">
+                <!-- 文章作者头像 -->
+                <img id="authorAvatar" src="" alt="文章作者的头像" onerror="this.src=defaultAvatar">
+                <!-- 作者名字改为可点击链接 -->
+                <a href="javascript:void(0);" class="author-link" id="authorName">作者名</a>
+                <button id="followBtn">+ 关注作者</button>
+                <span id="publishDate">2025-01-01</span>
+            </div>
+        </div>
+
+        <!-- 文章封面 -->
+        <img class="article-cover" id="articleCover" src="" alt="文章封面" style="display:none;">
+
+        <!-- 文章标签 -->
+        <div class="article-tags" id="articleTags" style="display:none;"></div>
+
+        <!-- 文章内容 -->
+        <div class="article-content" id="articleContent">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>文章内容加载中...</p>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="actions">
+            <button id="likeBtn"><i class="fas fa-thumbs-up"></i> 点赞</button>
+            <button id="favBtn"><i class="fas fa-star"></i> 收藏</button>
+            <button id="shareBtn"><i class="fas fa-share"></i> 分享</button>
+        </div>
+
+        <!-- 评论区 -->
+        <div class="comments">
+            <h3>评论</h3>
+            <div class="comment-form">
+                <textarea id="commentInput" placeholder="写下你的评论..."></textarea>
+                <button onclick="postComment()">发表评论</button>
+            </div>
+            <div id="commentList">
+                <div style="text-align: center; padding: 30px 0; color: var(--gray-light);">
+                    暂无评论，快来抢沙发吧～
+                </div>
+            </div>
+        </div>
+
+        <!-- 收藏夹模态框 -->
+        <div id="collectionModal">
+            <div class="modal-card">
+                <h4>选择收藏夹或新建</h4>
+                <div id="collectionList">加载中……</div>
+
+                <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+                    <input id="newCollectionName" placeholder="输入新收藏夹名称（可选）">
+                    <button id="createCollectionBtn">新建并收藏</button>
+                </div>
+
+                <div class="modal-actions" style="margin-top:12px;">
+                    <button id="closeCollectionModal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧边栏（文章作者头像） -->
+    <div class="sidebar">
+        <!-- 作者信息卡片 -->
+        <div class="sidebar-card">
+            <h3>作者信息</h3>
+            <div class="author-info">
+                <!-- 侧边栏：文章作者头像 -->
+                <img id="sidebarAuthorAvatar" src="" alt="文章作者的头像" onerror="this.src=defaultAvatar">
+                <div>
+                    <!-- 侧边栏作者名字也改为可点击链接 -->
+                    <a href="javascript:void(0);" class="author-name author-link" id="sidebarAuthorName">作者名</a>
+                    <button id="sidebarFollowBtn">关注</button>
+                </div>
+            </div>
+            <div class="author-bio" id="authorBio">该作者暂无详细简介，欢迎关注获取更多优质内容。</div>
+        </div>
+
+        <!-- 相关文章/标签卡片 -->
+        <div class="sidebar-card">
+            <h3>文章相关</h3>
+            <ul class="related-list" id="relatedArticles">
+                <li style="color: var(--gray-light);">加载中...</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 分享模态框 -->
+<div id="shareModal" class="modal">
+    <div class="modal-card">
+        <h4>分享文章</h4>
+        <p>复制以下链接分享给其他人：</p>
+        <input type="text" id="shareLink" value="https://short.url/a1b2c3" readonly>
+        <div class="modal-actions">
+            <button class="secondary-btn" id="closeShareModal">取消</button>
+            <button class="primary-btn" onclick="copyShareLink()">复制链接</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© 2023 智慧博客平台 · 探索技术的无限可能</p>
+    <p>背景图片来自 Unsplash，设计灵感来源于现代UI设计理念</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 1. 基础配置
+    const articleId = new URLSearchParams(window.location.search).get("id") * 1; // 转为Number匹配后端Long
+    const baseUrl = "http://localhost:9999"; // 后端服务地址
+    const defaultAvatar = `${baseUrl}/uploads/default-avatar.png`;
+    const loginPageUrl = "login.html"; // 登录页路径
+
+    // API根路径
+    const commentApi = `${baseUrl}/comment`;
+    const followApi = `${baseUrl}/follow`;
+    const likeApi = `${baseUrl}/like`;
+    const collectionApi = `${baseUrl}/collection`;
+    const collectionArticleApi = `${baseUrl}/collectionArticle`;
+
+    // 全局变量
+    let loginUser = null;
+    let collected = false;
+    let liked = false;
+    let followed = false;
+    let authorId = null; // 存储作者ID
+
+    /**
+     * 2. 从后端Session获取登录用户信息（Promise解决异步问题）
+     */
+    function getLoginUserFromSession() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `${baseUrl}/user/info`,
+                type: "GET",
+                xhrFields: {
+                    withCredentials: true // 允许跨域请求携带Cookie
+                },
+                success: function(res) {
+                    if (res.success && res.data) {
+                        loginUser = res.data;
+                        localStorage.setItem("loginUser", JSON.stringify(loginUser));
+                        initUserAvatar(loginUser);
+                        resolve();
+                    } else {
+                        handleUnLoginStatus();
+                        reject();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("获取登录状态失败：", error);
+                    $("#userAvatar").attr("src", defaultAvatar);
+                    reject();
+                }
+            });
+        });
+    }
+
+    /**
+     * 3. 初始化用户头像
+     */
+    function initUserAvatar(loginUserObj) {
+        let userAvatarUrl = defaultAvatar;
+        if (!loginUserObj) {
+            $("#userAvatar").attr("src", userAvatarUrl);
+            return;
+        }
+
+        const av = loginUserObj.avatarUrl || loginUserObj.avatar || loginUserObj.imagetoken || "";
+        if (av && av.toString().trim() !== "") {
+            if (av.toString().startsWith("http")) {
+                userAvatarUrl = av.toString();
+            } else {
+                const relativePath = av.toString().startsWith("/") ? av.toString() : `/${av.toString()}`;
+                userAvatarUrl = `${baseUrl}${relativePath}`;
+            }
+        }
+        $("#userAvatar").attr("src", userAvatarUrl);
+    }
+
+    /**
+     * 4. 处理未登录状态
+     */
+    function handleUnLoginStatus() {
+        localStorage.removeItem("loginUser");
+        loginUser = null;
+        $("#userAvatar").attr("src", defaultAvatar);
+        setTimeout(() => {
+            alert("登录状态已过期，请重新登录");
+            window.location.href = loginPageUrl;
+        }, 1000);
+    }
+
+    /**
+     * 5. 加载文章详情
+     */
+    function loadArticle() {
+        if (!articleId) {
+            $("#articleTitle").text("参数错误");
+            $("#articleContent").html("<p style='color: var(--accent); text-align: center; padding: 40px 0;'>未获取到文章ID，请检查链接是否正确</p>");
+            setDefaultAvatars();
+            return;
+        }
+
+        $.get(`${baseUrl}/article/detail`, { id: articleId }, function(res) {
+            if (!res.success) {
+                $("#articleTitle").text("加载失败");
+                $("#articleContent").html(`<p style='color: var(--accent); text-align: center; padding: 40px 0;'>${res.msg || '文章加载失败，请稍后重试'}</p>`);
+                setDefaultAvatars();
+                return;
+            }
+
+            const article = res.data;
+            const authorName = article.username || "未署名作者";
+            let authorAvatar = defaultAvatar;
+
+            if (article.authorAvatar) {
+                authorAvatar = article.authorAvatar.startsWith("http")
+                    ? article.authorAvatar
+                    : `${baseUrl}${article.authorAvatar.startsWith("/") ? "" : "/"}${article.authorAvatar}`;
+            }
+
+            // 填充文章信息
+            $("#articleTitle").text(article.title || "无标题文章");
+            $("#authorName").text(authorName);
+
+            // 保存作者ID用于关注功能（匹配后端FollowController的followeeId参数类型）
+            authorId = article.userId || article.authorId || article.author || article.user_id || article.uid || "";
+            if (authorId) {
+                // 设置作者名字的链接
+                $("#authorName").attr("href", `author.html?id=${authorId}`);
+                $("#sidebarAuthorName").attr("href", `author.html?id=${authorId}`);
+                $("#sidebarFollowBtn").data("followeeId", authorId);
+
+                // 加载关注初始状态（如果已登录）
+                if (loginUser) {
+                    loadFollowInitialState();
+                }
+            }
+
+            $("#authorAvatar").attr("src", authorAvatar);
+            $("#sidebarAuthorName").text(authorName);
+            $("#sidebarAuthorAvatar").attr("src", authorAvatar);
+
+            // 处理发布时间
+            if (article.publishTime) {
+                const publishDate = new Date(article.publishTime);
+                const formattedDate = `${publishDate.getFullYear()}年${publishDate.getMonth() + 1}月${publishDate.getDate()}日 ${publishDate.getHours().toString().padStart(2, '0')}:${publishDate.getMinutes().toString().padStart(2, '0')}`;
+                $("#publishDate").text(formattedDate);
+            } else {
+                $("#publishDate").text("未知时间");
+            }
+
+            // 处理文章封面
+            if (article.coverImageUrl) {
+                const coverUrl = article.coverImageUrl.startsWith("http")
+                    ? article.coverImageUrl
+                    : `${baseUrl}${article.coverImageUrl.startsWith("/") ? "" : "/"}${article.coverImageUrl}`;
+                $("#articleCover").attr("src", coverUrl).attr("alt", `${article.title || '文章'}的封面`).show();
+            }
+
+            // 处理文章标签
+            const tagsContainer = $("#articleTags");
+            if (article.tags && article.tags.length > 0) {
+                tagsContainer.empty();
+                article.tags.forEach(tag => tagsContainer.append(`<div class="tag-item">${tag}</div>`));
+                tagsContainer.show();
+            } else {
+                tagsContainer.hide();
+            }
+
+            // 处理文章内容
+            const articleContent = article.content || "<p style='color: var(--gray-light); text-align: center; padding: 40px 0;'>该文章暂无内容</p>";
+            $("#articleContent").html(articleContent);
+
+            // 处理作者简介
+            const authorBio = article.username
+                ? `${authorName}专注于优质内容创作，擅长分享各类实用知识，已发布多篇原创文章，欢迎关注获取最新更新。`
+                : "该作者暂无公开信息，欢迎关注以获取更多动态。";
+            $("#authorBio").text(authorBio);
+
+            // 处理侧边栏相关内容
+            const relatedContainer = $("#relatedArticles");
+            relatedContainer.empty();
+            if (article.tags && article.tags.length > 0) {
+                relatedContainer.append(`<li class="tags-title"><i class="fas fa-tags"></i> 文章标签</li>`);
+                article.tags.forEach(tag => relatedContainer.append(`<li><span style="color: var(--primary-light);">${tag}</span></li>`));
+            }
+            relatedContainer.append(`<li style="margin-top: 16px; color: var(--gray-light);"><i class="fas fa-book"></i> 暂无相关文章推荐</li>`);
+
+        }).fail(function() {
+            $("#articleTitle").text("加载失败");
+            $("#articleContent").html("<p style='color: var(--accent); text-align: center; padding: 40px 0;'>网络错误，无法连接到服务器，请检查网络后重试</p>");
+            $("#relatedArticles").empty().append("<li style='color: var(--accent);'>网络错误，无法加载相关内容</li>");
+            setDefaultAvatars();
+        });
+    }
+
+    /**
+     * 6. 设置默认头像
+     */
+    function setDefaultAvatars() {
+        $("#userAvatar").attr("src", defaultAvatar);
+        $("#authorAvatar").attr("src", defaultAvatar);
+        $("#sidebarAuthorAvatar").attr("src", defaultAvatar);
+    }
+
+    /**
+     * 7. 评论功能
+     */
+    function loadComments() {
+        if (!articleId) {
+            $("#commentList").empty().append(`<div style="text-align: center; padding: 30px 0; color: var(--gray-light);">暂无评论，快来抢沙发吧～</div>`);
+            return;
+        }
+
+        $.ajax({
+            url: `${commentApi}/list`,
+            type: "GET",
+            data: { articleId },
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                const commentList = $("#commentList").empty();
+                if (res.success && res.data && res.data.length > 0) {
+                    res.data.forEach(comment => {
+                        const avatar = comment.userAvatar
+                            ? (comment.userAvatar.startsWith("http") ? comment.userAvatar : `${baseUrl}${comment.userAvatar.startsWith("/") ? "" : "/"}${comment.userAvatar}`)
+                            : defaultAvatar;
+                        commentList.append(`
+                            <div class="comment">
+                                <img src="${avatar}" alt="用户头像">
+                                <div class="comment-body">
+                                    <div class="meta"><span>${comment.username}</span><span>${new Date(comment.createTime).toLocaleString()}</span></div>
+                                    <div class="text">${comment.content}</div>
+                                </div>
+                            </div>
+                        `);
+                    });
+                } else {
+                    commentList.append(`<div style="text-align: center; padding: 30px 0; color: var(--gray-light);">暂无评论，快来抢沙发吧～</div>`);
+                }
+            },
+            error: function() {
+                $("#commentList").empty().append(`<div style="text-align: center; padding: 30px 0; color: var(--accent);">评论加载失败，请稍后重试</div>`);
+            }
+        });
+    }
+
+    function postComment() {
+        const content = $("#commentInput").val().trim();
+        if (!content) {
+            alert("请输入评论内容后再发表！");
+            return;
+        }
+        if (!loginUser) {
+            alert("请先登录再评论");
+            return;
+        }
+
+        $.ajax({
+            url: `${commentApi}/add`,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ articleId: Number(articleId), content }),
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    $("#commentInput").val("");
+                    loadComments();
+                } else {
+                    alert(res.msg || "发表评论失败");
+                }
+            },
+            error: function() {
+                alert("网络异常，发表评论失败");
+            }
+        });
+    }
+
+    /**
+     * 8. 点赞功能（对接后端LikeController）
+     */
+    function loadLikeInitialState() {
+        if (!loginUser || !articleId) return; // 必须登录且有文章ID
+        $.ajax({
+            url: `${likeApi}/check`, // 对接后端/check接口判断是否点赞
+            type: "GET",
+            data: { articleId: Number(articleId) }, // 转Number匹配后端Long类型
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    liked = res.data;
+                    updateLikeBtnState();
+                    fetchLikeCount();
+                } else {
+                    console.error("加载点赞状态失败：", res.msg);
+                    fetchLikeCount();
+                }
+            },
+            error: function() {
+                console.error("加载点赞状态网络错误");
+                fetchLikeCount();
+            }
+        });
+    }
+
+    function toggleLike() {
+        if (!loginUser) {
+            alert("请先登录");
+            return;
+        }
+        if (!articleId) {
+            alert("无法获取文章信息，操作失败");
+            return;
+        }
+
+        const url = liked ? `${likeApi}/remove` : `${likeApi}/add`;
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { articleId: Number(articleId) }, // 匹配后端@RequestParam Long articleId
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    liked = !liked;
+                    updateLikeBtnState();
+                    fetchLikeCount();
+                    alert(liked ? "已成功点赞文章" : "已成功取消点赞");
+                } else {
+                    // 后端返回错误（如已点赞/已取消）
+                    alert(res.msg || "操作失败，请稍后重试");
+                }
+            },
+            error: function() {
+                alert("网络异常，操作失败，请检查网络连接");
+            }
+        });
+    }
+
+    function updateLikeBtnState() {
+        if (liked) {
+            $("#likeBtn").addClass("liked");
+        } else {
+            $("#likeBtn").removeClass("liked");
+        }
+    }
+
+    function fetchLikeCount() {
+        $.ajax({
+            url: `${likeApi}/count`,
+            type: "GET",
+            data: { articleId: Number(articleId) },
+            success: function(res) {
+                if (res && res.success) {
+                    const cnt = res.data || 0;
+                    $("#likeBtn").html(`<i class="fas fa-thumbs-up"></i> ${liked ? "已点赞" : "点赞"} (${cnt})`);
+                }
+            },
+            error: function() {
+                $("#likeBtn").html(`<i class="fas fa-thumbs-up"></i> ${liked ? "已点赞" : "点赞"} (未知)`);
+            }
+        });
+    }
+
+    /**
+     * 9. 关注功能（对接后端FollowController）
+     */
+    function loadFollowInitialState() {
+        if (!loginUser || !authorId) return; // 必须登录且有作者ID
+        $.ajax({
+            url: `${followApi}/check`,
+            type: "GET",
+            data: { followeeId: Number(authorId) }, // 转Number匹配后端Integer类型
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    followed = res.data;
+                    updateFollowBtnState();
+                } else {
+                    console.error("加载关注状态失败：", res.msg);
+                }
+            },
+            error: function() {
+                console.error("加载关注状态网络错误");
+            }
+        });
+    }
+
+    function toggleFollow() {
+        if (!loginUser) {
+            alert("请先登录");
+            return;
+        }
+        if (!authorId) {
+            alert("无法获取作者信息，操作失败");
+            return;
+        }
+
+        const url = followed ? `${followApi}/remove` : `${followApi}/add`;
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { followeeId: Number(authorId) }, // 匹配后端@RequestParam Integer followeeId
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success) {
+                    followed = !followed;
+                    updateFollowBtnState();
+                    alert(followed ? "已成功关注作者" : "已成功取消关注作者");
+                } else {
+                    // 后端返回错误（如已关注）
+                    alert(res.msg || "操作失败，请稍后重试");
+                }
+            },
+            error: function() {
+                alert("网络异常，操作失败，请检查网络连接");
+            }
+        });
+    }
+
+    function updateFollowBtnState() {
+        const btnText = followed ? "已关注" : "+ 关注作者";
+        $("#followBtn").text(btnText);
+        $("#sidebarFollowBtn").text(btnText);
+
+        // 更新关注按钮样式
+        if (followed) {
+            $("#followBtn").addClass("followed");
+            $("#sidebarFollowBtn").addClass("followed");
+        } else {
+            $("#followBtn").removeClass("followed");
+            $("#sidebarFollowBtn").removeClass("followed");
+        }
+    }
+
+    /**
+     * 10. 收藏功能（前端模拟效果）
+     */
+    function toggleCollect() {
+        if (!loginUser) {
+            alert("请先登录");
+            return;
+        }
+
+        // 前端模拟效果
+        collected = !collected;
+        updateCollectBtnState();
+
+        if (collected) {
+            alert("文章已收藏！");
+        } else {
+            alert("文章已取消收藏！");
+        }
+    }
+
+    function updateCollectBtnState() {
+        if (collected) {
+            $("#favBtn").addClass("collected");
+            $("#favBtn").html(`<i class="fas fa-star"></i> 已收藏`);
+        } else {
+            $("#favBtn").removeClass("collected");
+            $("#favBtn").html(`<i class="fas fa-star"></i> 收藏`);
+        }
+    }
+
+    /**
+     * 11. 分享功能
+     */
+    function shareArticle() {
+        // 生成短链接（这里使用固定值模拟）
+        $('#shareLink').val('https://short.url/a1b2c3');
+        $('#shareModal').css('display', 'flex');
+    }
+
+    function copyShareLink() {
+        const shareLink = document.getElementById('shareLink');
+        shareLink.select();
+        document.execCommand('copy');
+        alert('链接已复制到剪贴板！');
+        $('#shareModal').hide();
+    }
+
+    /**
+     * 12. 退出登录
+     */
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            $.ajax({
+                url: `${baseUrl}/user/logout`,
+                type: "POST",
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(res) {
+                    if (res.success) {
+                        localStorage.removeItem("loginUser");
+                        window.location.href = loginPageUrl;
+                    } else {
+                        alert("退出失败：" + (res.msg || "未知错误"));
+                    }
+                },
+                error: function() {
+                    alert("网络错误，退出失败");
+                }
+            });
+        }
+    }
+
+    /**
+     * 13. 页面初始化
+     */
+    $(document).ready(function() {
+        // 绑定点赞按钮点击事件
+        $("#likeBtn").click(toggleLike);
+
+        // 获取登录状态后初始化点赞状态
+        getLoginUserFromSession().then(() => {
+            if (loginUser) {
+                loadLikeInitialState();
+            }
+        }).catch(() => {
+            console.log("用户未登录");
+        });
+
+        // 加载文章和评论
+        loadArticle();
+        loadComments();
+
+        // 绑定收藏模态框事件
+        $("#favBtn").click(toggleCollect);
+
+        // 分享按钮事件
+        $("#shareBtn").click(shareArticle);
+
+        // 关注按钮事件
+        $("#followBtn").click(toggleFollow);
+        $("#sidebarFollowBtn").click(toggleFollow);
+
+        // 关闭分享模态框
+        $("#closeShareModal").click(() => {
+            $("#shareModal").hide();
+        });
+
+        // 点击模态框外部关闭
+        $(window).click(function(event) {
+            if ($(event.target).is('.modal')) {
+                $('.modal').hide();
+            }
+        });
+    });
+</script>
+</body>
+</html>

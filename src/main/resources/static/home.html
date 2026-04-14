@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧博客平台 - 首页</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #1e293b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --navbar-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+            url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        /* 高斯模糊顶栏 - 黑色主题 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            height: var(--navbar-height);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--primary-light);
+        }
+
+        /* 搜索框美化 - 暗色主题 */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 14px 48px 14px 18px;
+            border: none;
+            width: 320px;
+            transition: var(--transition);
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 2px var(--primary-light), 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-box input::placeholder {
+            color: var(--gray-light);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus + .search-icon {
+            color: var(--primary-light);
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .user-info img:hover {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .navbar .user-info button {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar .user-info button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .navbar .user-info button.primary {
+            background: var(--primary);
+        }
+
+        .navbar .user-info button.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--light);
+            margin-right: 5px;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-light), var(--accent));
+            border-radius: 3px;
+        }
+
+        /* 主布局 */
+        .layout {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+            max-width: 1280px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .main { }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 瀑布流文章区域 */
+        #articleList {
+            column-count: 3;
+            column-gap: 24px;
+        }
+
+        .card {
+            display: inline-block;
+            width: 100%;
+            margin: 0 0 24px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 16px;
+            transition: var(--transition);
+            vertical-align: top;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            opacity: 0.8;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .card .media {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card .media img {
+            width: 100%;
+            height: 200px;
+            display: block;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .media img {
+            transform: scale(1.05);
+        }
+
+        .card .body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card .author {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card .article-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--light);
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card .article-summary {
+            font-size: 14px;
+            color: var(--gray-light);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+
+        .card .article-meta {
+            font-size: 13px;
+            color: var(--gray-light);
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card .article-meta i {
+            margin-right: 5px;
+        }
+
+        /* 侧边栏 */
+        .sidebar-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-card h3 {
+            font-size: 18px;
+            margin-bottom: 18px;
+            padding-left: 12px;
+            color: var(--light);
+            font-weight: 700;
+            position: relative;
+        }
+
+        .sidebar-card h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .sidebar-card ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-card ul li {
+            margin: 12px 0;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-card ul li::before {
+            content: '#';
+            color: var(--primary-light);
+            font-weight: bold;
+        }
+
+        .sidebar-card ul li:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1100px) {
+            .layout { grid-template-columns: 1fr; }
+            #articleList { column-count: 2; }
+            .search-box input { width: 260px; }
+        }
+
+        @media (max-width: 768px) {
+            #articleList { column-count: 1; }
+            .navbar { padding: 0 4%; }
+            .search-box { display: none; }
+            .navbar .user-info { gap: 12px; }
+            .navbar .user-info button span { display: none; }
+            .username { display: none; }
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* 加载动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            color: var(--gray-light);
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+<!-- 高斯模糊顶栏 - 黑色主题 -->
+<div class="navbar">
+    <div class="logo"><i class="fas fa-brain"></i> 智慧博客平台</div>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="探索知识海洋...">
+            <div class="search-icon"><i class="fas fa-search"></i></div>
+        </div>
+    </div>
+    <div class="user-info" id="userInfo">
+        <img src="" id="userAvatar" alt="用户头像">
+        <span class="username" id="username">加载中...</span>
+
+        <button onclick="window.location.href='personal.html'">
+            <i class="fas fa-user"></i> <span>我的</span>
+        </button>
+
+        <button onclick="window.location.href='write.html'" class="primary">
+            <i class="fas fa-pen-to-square"></i> <span>发帖</span>
+        </button>
+
+        <button onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> <span>退出</span>
+        </button>
+    </div>
+</div>
+
+<h1 class="page-title">探索 · 分享 · 成长</h1>
+
+<div class="layout">
+    <!-- 主内容（瀑布流文章） -->
+    <div class="main">
+        <div id="articleList"></div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-card">
+            <h3>热门标签</h3>
+            <ul>
+                <li>人工智能</li>
+                <li>前端开发</li>
+                <li>后端技术</li>
+                <li>数据库</li>
+                <li>随笔</li>
+            </ul>
+        </div>
+        <div class="sidebar-card">
+            <h3>热门文章</h3>
+            <ul id="hotArticles">
+                <li>加载中...</li>
+            </ul>
+        </div>
+        <div class="sidebar-card">
+            <h3>活跃作者</h3>
+            <ul>
+                <li>张三</li>
+                <li>李四</li>
+                <li>王五</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© 2023 智慧博客平台 · 探索技术的无限可能</p>
+    <p>背景图片来自 Unsplash，设计灵感来源于现代UI设计理念</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const grid = document.getElementById("articleList");
+    const pageSize = 12;
+    let currentPage = 1;
+    const baseUrl = "http://localhost:9999";
+
+    /**
+     * 获取用户信息
+     */
+    function fetchUserInfo() {
+        $.ajax({
+            url: `${baseUrl}/user/info`,
+            type: "GET",
+            xhrFields: { withCredentials: true },
+            success: function(res) {
+                if (res.success && res.data) {
+                    const user = res.data;
+                    $("#username").text(user.username);
+
+                    let avatarUrl = user.avatarUrl || "";
+                    if (avatarUrl) {
+                        if (!avatarUrl.startsWith("http")) {
+                            avatarUrl = `${baseUrl}/${avatarUrl.replace(/^\/+/, "")}`;
+                        }
+                    } else {
+                        $("#userAvatar").hide();
+                        return;
+                    }
+
+                    $("#userAvatar").show();
+                    $("#userAvatar").attr("src", avatarUrl);
+
+                    $("#userAvatar").on("error", function() {
+                        console.error("头像加载失败，当前URL：" + avatarUrl);
+                        $(this).hide();
+                    });
+                } else {
+                    window.location.href = "login.html";
+                }
+            },
+            error: function() {
+                console.error("获取用户信息失败");
+            }
+        });
+    }
+
+    /**
+     * 加载文章列表
+     */
+    function loadArticles(page = 1, keyword = '') {
+        $.get(`${baseUrl}/article/list`, {
+            page: page,
+            size: pageSize,
+            keyword: keyword
+        }, function(res) {
+            if (res.success) {
+                renderArticles(res.data.records);
+            } else {
+                grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--gray);">文章加载失败</div>';
+            }
+        });
+    }
+
+    /**
+     * 渲染文章卡片
+     */
+    function renderArticles(articles) {
+        grid.innerHTML = "";
+        if (articles.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--gray);">暂无文章</div>';
+            return;
+        }
+        articles.forEach(article => {
+            const card = document.createElement('div');
+            card.className = "card";
+            card.onclick = () => window.location.href = `detail.html?id=${article.id}`;
+
+            const coverHtml = article.coverImageUrl
+                ? `<div class="media"><img src="${article.coverImageUrl}" alt="${article.title}封面"></div>`
+                : "";
+
+            card.innerHTML = `
+                ${coverHtml}
+                <div class="body">
+                  <div class="author"><i class="fas fa-user"></i> ${article.username || '未署名'}</div>
+                  <h3 class="article-title">${article.title}</h3>
+                  <p class="article-summary">${article.summary || '无摘要'}</p>
+                  <div class="article-meta">
+                    <span><i class="far fa-clock"></i> ${formatTime(article.publishTime)}</span>
+                    <span><i class="far fa-eye"></i> 1.2k</span>
+                  </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    /**
+     * 加载热门文章
+     */
+    function loadHotArticles() {
+        $.get(`${baseUrl}/article/list`, { page: 1, size: 5 }, function(res) {
+            if (res.success) {
+                const hotList = $("#hotArticles");
+                hotList.empty();
+                res.data.records.forEach(article => {
+                    hotList.append(`<li onclick="window.location.href='detail.html?id=${article.id}'">${article.title}</li>`);
+                });
+            } else {
+                $("#hotArticles").html("<li>热门文章加载失败</li>");
+            }
+        });
+    }
+
+    /**
+     * 退出登录
+     */
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            $.ajax({
+                url: `${baseUrl}/user/logout`,
+                type: "POST",
+                xhrFields: { withCredentials: true },
+                success: function(res) {
+                    if (res.success) {
+                        window.location.href = "login.html";
+                    } else {
+                        alert("退出失败：" + (res.msg || "未知错误"));
+                    }
+                },
+                error: function() {
+                    alert("网络异常，退出失败");
+                }
+            });
+        }
+    }
+
+    /**
+     * 时间格式化
+     */
+    function formatTime(timeStr) {
+        if (!timeStr) return "未知时间";
+        const date = new Date(timeStr);
+        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    }
+
+    /**
+     * 页面初始化
+     */
+    $(document).ready(function() {
+        fetchUserInfo();
+        loadArticles();
+        loadHotArticles();
+
+        // 搜索功能
+        $("#searchInput").on("keydown", function(e) {
+            if (e.key === "Enter") {
+                const keyword = $(this).val().trim();
+                loadArticles(1, keyword);
+            }
+        });
+
+        // 点击搜索图标也可触发搜索
+        $(".search-icon").on("click", function() {
+            const keyword = $("#searchInput").val().trim();
+            loadArticles(1, keyword);
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,968 @@
+<html lang="zh-CN">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 人脸验证 | 知途智慧博客</title>
+    <!-- 引入 Vue 2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <style>
+        /* 1. 基础重置 & 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: url("../img/bac1.png") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 80px; /* 为固定顶栏预留空间 */
+            /* 移除固定底栏的内边距，改为正常文档流 */
+            padding-bottom: 20px;
+        }
+
+        /* 2. 顶部导航栏：保持固定 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 导航栏logo位置 */
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* 导航链接样式 */
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav ul li a:hover {
+            color: #4A00E0;
+            border-bottom: 2px solid #4A00E0;
+        }
+
+        /* 3. 核心容器：居中布局 */
+        .register-container {
+            width: 100%;
+            max-width: 750px; /* 保持缩小的卡片尺寸 */
+            margin: 40px auto;
+            display: flex;
+            gap: 20px;
+            padding: 0 15px;
+        }
+
+        /* 4. 表单和人脸区域：保持模糊效果 */
+        .form-section, .face-section {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* 5. 标题样式 */
+        .form-title, .capture-main-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-title::after, .capture-main-title::after {
+            content: "";
+            display: block;
+            width: 35px;
+            height: 2px;
+            background-color: #4A00E0;
+            border-radius: 3px;
+            margin: 6px 0 0;
+        }
+
+        /* 6. 表单组 */
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .form-icon {
+            color: #4A00E0;
+            font-size: 14px;
+        }
+
+        /* 7. 输入框样式 */
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            font-size: 13px;
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #4A00E0;
+            box-shadow: 0 0 0 2px rgba(74, 0, 224, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: #a1a8b3;
+            font-weight: 400;
+        }
+
+        .form-input.error {
+            border-color: #f53f3f;
+        }
+
+        /* 8. 邮箱+验证码组 */
+        .email-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .email-input {
+            flex: 1;
+        }
+
+        .btn-verify {
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-verify:hover {
+            background-color: rgba(74, 0, 224, 0.2);
+            color: #fff;
+            border-color: #4A00E0;
+        }
+
+        .btn-verify:disabled {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #a1a8b3;
+            cursor: not-allowed;
+        }
+
+        /* 9. 人脸采集区域 */
+        .face-capture {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+
+        .capture-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e0e0;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #video, #photo {
+            max-width: 100%;
+            max-height: 150px;
+            height: auto;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 0 auto 14px;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+
+        #photo {
+            opacity: 0;
+        }
+
+        #photo.show {
+            opacity: 1;
+        }
+
+        /* 10. 按钮样式 */
+        .btn {
+            width: 100%;
+            padding: 8px 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background-color: #4A00E0;
+            color: #ffffff;
+            margin-top: auto;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a00c0;
+            box-shadow: 0 3px 10px rgba(74, 0, 224, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        /* 11. 文件上传按钮 */
+        #fileInput {
+            display: none;
+        }
+
+        .upload-label {
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            border-radius: 6px;
+            margin-top: 6px;
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .upload-label:hover {
+            border-color: #4A00E0;
+            background-color: rgba(74, 0, 224, 0.1);
+            color: #fff;
+        }
+
+        /* 12. 结果反馈区域 */
+        #result {
+            background-color: rgba(74, 0, 224, 0.1);
+            border: 1px solid rgba(74, 0, 224, 0.15);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            color: #e0e0e0;
+            margin-top: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 40px;
+            flex-shrink: 0;
+        }
+
+        /* 13. 错误提示样式 */
+        .error-tip {
+            display: none;
+            font-size: 11px;
+            color: #ff6b6b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .error-tip.show {
+            display: flex;
+        }
+
+        .error-icon {
+            font-size: 11px;
+        }
+
+        /* 14. 隐藏画布 */
+        #canvas {
+            display: none;
+        }
+
+        /* 15. 页脚区域：改为随滚动显示，不固定 */
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 40px 5%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            /* 关键修改：移除固定定位，改为正常文档流 */
+            position: static;
+            margin-top: 60px; /* 与内容保持距离 */
+            width: 100%;
+        }
+
+        .footer-col {
+            margin-bottom: 24px;
+            min-width: 160px;
+        }
+
+        .footer-col h3 {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-col ul li a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #4A00E0;
+        }
+
+        .copyright {
+            width: 100%;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* 16. 响应式适配 */
+        @media (max-width: 768px) {
+            .register-container {
+                flex-direction: column;
+                max-width: 400px;
+                gap: 15px;
+            }
+
+            .email-group {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn-verify {
+                width: 100%;
+            }
+
+            #video, #photo {
+                max-height: 130px;
+            }
+
+            footer {
+                padding: 20px 5%;
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 头部导航：保持固定 -->
+<header>
+    <a href="#" class="logo">
+        <img src="../img/logo.PNG" alt="知途AIlogo" class="logo-img">
+        <span class="logo-text">知途智慧博客</span>
+    </a>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">主页</a></li>
+            <li><a href="ai-chat.html">对话</a></li>
+            <li><a href="#">关于我们</a></li>
+            <li><a href="register.html">注册</a></li>
+            <li><a href="login.html">登录</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Vue 根容器 -->
+<div id="app" class="register-container">
+    <!-- 左栏：表单区域 -->
+    <div class="form-section">
+        <h2 class="form-title">
+            <i class="fa fa-user-plus form-icon"></i>
+            用户注册 - 人脸验证
+        </h2>
+
+        <!-- 表单：功能不变 -->
+        <form @submit.prevent="submitForm">
+            <!-- 用户名 -->
+            <div class="form-group">
+                <div class="form-group-header">
+                    <i class="fa fa-user form-icon"></i>
+                    <label class="form-label" for="username">用户名</label>
+                </div>
+                <input type="text" id="username" class="form-input" placeholder="请输入3-20位用户名" v-model="form.username" @input="validateUsername" :class="{ error: formErrors.username }" required="">
+                <div class="error-tip" id="usernameTip" v-show="formErrors.username">
+                    <i class="fa fa-exclamation-circle error-icon"></i>
+                    用户名长度需在3-20位之间
+                </div>
+            </div>
+
+            <!-- 密码 -->
+            <div class="form-group">
+                <div class="form-group-header">
+                    <i class="fa fa-lock form-icon"></i>
+                    <label class="form-label" for="password">密码</label>
+                </div>
+                <input type="password" id="password" class="form-input" placeholder="请输入至少6位密码" v-model="form.password" @input="validatePassword" :class="{ error: formErrors.password }" required="">
+                <div class="error-tip" id="passwordTip" v-show="formErrors.password">
+                    <i class="fa fa-exclamation-circle error-icon"></i>
+                    密码长度需至少6位
+                </div>
+            </div>
+
+            <!-- 邮箱 + 获取验证码 -->
+            <div class="form-group">
+                <div class="form-group-header">
+                    <i class="fa fa-envelope form-icon"></i>
+                    <label class="form-label" for="email">邮箱</label>
+                </div>
+                <div class="email-group">
+                    <input type="email" id="email" class="form-input email-input" placeholder="请输入有效邮箱" v-model="form.email" @input="validateEmail" :class="{ error: formErrors.email }" required="">
+                    <button type="button" class="btn-verify" @click="getVerifyCode" :disabled="verifyBtnDisabled">
+                        <i class="fa" :class="verifyBtnIcon"></i>
+                        {{ verifyBtnText }}
+                    </button>
+                </div>
+                <div class="error-tip" id="emailTip" v-show="formErrors.email">
+                    <i class="fa fa-exclamation-circle error-icon"></i>
+                    请输入正确的邮箱格式（如xxx@xxx.com）
+                </div>
+            </div>
+
+            <!-- 验证码输入 -->
+            <div class="form-group">
+                <div class="form-group-header">
+                    <i class="fa fa-shield form-icon"></i>
+                    <label class="form-label" for="verifyCode">验证码</label>
+                </div>
+                <input type="text" id="verifyCode" class="form-input" placeholder="请输入6位验证码" v-model="form.verifyCode" @input="validateVerifyCode" :class="{ error: formErrors.verifyCode }" required="">
+                <div class="error-tip" id="verifyCodeTip" v-show="formErrors.verifyCode">
+                    <i class="fa fa-exclamation-circle error-icon"></i>
+                    请输入6位数字验证码
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-check"></i>
+                提交注册
+            </button>
+
+            <!-- 结果反馈 -->
+            <pre id="result" v-text="submitResult" :style="{ color: submitResultColor }"></pre>
+        </form>
+    </div>
+
+    <!-- 右栏：人脸采集区域 -->
+    <div class="face-section">
+        <h3 class="capture-main-title">
+            <i class="fa fa-camera form-icon"></i>
+            人脸采集
+        </h3>
+        <div class="face-capture">
+            <div class="capture-title">
+                请拍照或上传清晰人脸照片
+            </div>
+
+            <!-- 摄像头/拍照按钮组 -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" @click="startCamera">
+                    <i class="fa fa-video-camera"></i>
+                    打开摄像头
+                </button>
+                <button type="button" class="btn btn-secondary" @click="capturePhoto" :disabled="!mediaStream">
+                    <i class="fa fa-camera"></i>
+                    拍照
+                </button>
+            </div>
+
+            <!-- 视频流 -->
+            <video id="video" autoplay="" playsinline="" v-show="showVideo"></video>
+            <!-- 隐藏的画布 -->
+            <canvas id="canvas"></canvas>
+            <!-- 拍摄/上传的照片 -->
+            <img id="photo" alt="拍摄的照片" :src="photoSrc" :class="{ show: showPhoto }">
+
+            <!-- 图片上传 -->
+            <label for="fileInput" class="upload-label">
+                <i class="fa fa-upload"></i>
+                选择本地图片
+            </label>
+            <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" ref="fileInput">
+        </div>
+    </div>
+</div>
+
+<!-- 页脚：现在随滚动显示，不固定在底部 -->
+<footer>
+    <div class="footer-col">
+        <h3>关于知途AI</h3>
+        <ul>
+            <li><a href="#">平台简介</a></li>
+            <li><a href="#">技术优势</a></li>
+            <li><a href="#">发展历程</a></li>
+            <li><a href="#">加入我们</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h3>功能中心</h3>
+        <ul>
+            <li><a href="#">对话记录</a></li>
+            <li><a href="#">功能设置</a></li>
+            <li><a href="#">场景推荐</a></li>
+            <li><a href="#">高级功能</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h3>帮助中心</h3>
+        <ul>
+            <li><a href="#">使用指南</a></li>
+            <li><a href="#">常见问题</a></li>
+            <li><a href="#">反馈建议</a></li>
+            <li><a href="#">客服联系</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h3>关注我们</h3>
+        <ul>
+            <li><a href="#">微信公众号</a></li>
+            <li><a href="#">微博</a></li>
+            <li><a href="#">抖音</a></li>
+            <li><a href="#">技术博客</a></li>
+        </ul>
+    </div>
+    <div class="copyright">
+        <p>© 2023 知途AI科技有限公司 版权所有 | 人工智能应用服务提供商</p>
+    </div>
+</footer>
+
+<script>
+    // Vue 实例
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                // 表单数据（双向绑定）
+                form: {
+                    username: '',
+                    password: '',
+                    email: '',
+                    verifyCode: ''
+                },
+                // 表单错误状态（控制错误提示显示）
+                formErrors: {
+                    username: false,
+                    password: false,
+                    email: false,
+                    verifyCode: false
+                },
+                // 验证码按钮状态
+                verifyBtnDisabled: false,
+                verifyBtnText: '获取验证码',
+                verifyBtnIcon: 'fa-paper-plane',
+                countdown: 60,
+                countdownTimer: null,
+                // 人脸采集相关数据
+                base64Data: '', // 存储图片base64
+                photoSrc: '', // 图片显示地址
+                showVideo: false, // 视频显示状态
+                showPhoto: false, // 图片显示状态
+                mediaStream: null, // 摄像头流
+                // 提交结果
+                submitResult: '',
+                submitResultColor: '#1d2129'
+            }
+        },
+        methods: {
+            // ====================== 表单验证方法 ======================
+            validateUsername() {
+                const val = this.form.username.trim();
+                if (val.length === 0) {
+                    this.formErrors.username = false;
+                } else if (val.length < 3 || val.length > 20) {
+                    this.formErrors.username = true;
+                } else {
+                    this.formErrors.username = false;
+                }
+            },
+            validatePassword() {
+                const val = this.form.password.trim();
+                if (val.length === 0) {
+                    this.formErrors.password = false;
+                } else if (val.length < 6) {
+                    this.formErrors.password = true;
+                } else {
+                    this.formErrors.password = false;
+                }
+            },
+            validateEmail() {
+                const val = this.form.email.trim();
+                const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (val.length === 0) {
+                    this.formErrors.email = false;
+                } else if (!reg.test(val)) {
+                    this.formErrors.email = true;
+                } else {
+                    this.formErrors.email = false;
+                }
+            },
+            validateVerifyCode() {
+                const val = this.form.verifyCode.trim();
+                if (val.length === 0) {
+                    this.formErrors.verifyCode = false;
+                } else if (val.length !== 6 || !/^\d{6}$/.test(val)) {
+                    this.formErrors.verifyCode = true;
+                } else {
+                    this.formErrors.verifyCode = false;
+                }
+            },
+
+            // ====================== 获取验证码方法 ======================
+            async getVerifyCode() {
+                const emailVal = this.form.email.trim();
+                const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                // 验证邮箱格式
+                if (!reg.test(emailVal)) {
+                    this.formErrors.email = true;
+                    this.submitResult = "❌ 请输入正确的邮箱格式";
+                    this.submitResultColor = "#f53f3f";
+                    return;
+                }
+
+                // 禁用按钮并启动倒计时
+                this.verifyBtnDisabled = true;
+                this.verifyBtnIcon = 'fa-clock-o';
+                this.verifyBtnText = `重新发送 (${this.countdown}s)`;
+
+                this.countdownTimer = setInterval(() => {
+                    this.countdown--;
+                    this.verifyBtnText = `重新发送 (${this.countdown}s)`;
+                    if (this.countdown <= 0) {
+                        clearInterval(this.countdownTimer);
+                        this.verifyBtnDisabled = false;
+                        this.verifyBtnIcon = 'fa-paper-plane';
+                        this.verifyBtnText = '获取验证码';
+                        this.countdown = 60; // 重置倒计时
+                    }
+                }, 1000);
+
+                // 发送请求获取验证码
+                try {
+                    const resp = await fetch("http://localhost:9999/mail", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `email=${encodeURIComponent(emailVal)}`
+                    });
+                    const text = await resp.text();
+                    if (text === "success") {
+                        this.submitResult = "✅ 验证码已发送，请检查邮箱！";
+                        this.submitResultColor = "#00b42a";
+                    } else {
+                        this.submitResult = "❌ 发送失败：" + text;
+                        this.submitResultColor = "#f53f3f";
+                        this.resetVerifyBtn(); // 重置按钮
+                    }
+                } catch (err) {
+                    this.submitResult = "❌ 请求失败：" + err.message;
+                    this.submitResultColor = "#f53f3f";
+                    this.resetVerifyBtn(); // 重置按钮
+                }
+            },
+
+            // 重置验证码按钮状态
+            resetVerifyBtn() {
+                clearInterval(this.countdownTimer);
+                this.verifyBtnDisabled = false;
+                this.verifyBtnIcon = 'fa-paper-plane';
+                this.verifyBtnText = '获取验证码';
+                this.countdown = 60;
+            },
+
+            // ====================== 摄像头/拍照方法 ======================
+            async startCamera() {
+                try {
+                    // 关闭已存在的流
+                    if (this.mediaStream) {
+                        this.mediaStream.getTracks().forEach(track => track.stop());
+                    }
+
+                    // 打开摄像头
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user' }
+                    });
+                    const videoEl = document.getElementById('video');
+                    videoEl.srcObject = this.mediaStream;
+
+                    // 更新视图状态
+                    this.showVideo = true;
+                    this.showPhoto = false;
+                    this.submitResult = "";
+                    this.submitResultColor = "#1d2129";
+                } catch (err) {
+                    this.submitResult = "❌ 无法打开摄像头：" + err.message;
+                    this.submitResultColor = "#f53f3f";
+                }
+            },
+
+            // 拍照
+            capturePhoto() {
+                if (!this.mediaStream) {
+                    this.submitResult = "❌ 请先打开摄像头";
+                    this.submitResultColor = "#f53f3f";
+                    return;
+                }
+
+                const videoEl = document.getElementById('video');
+                const canvasEl = document.getElementById('canvas');
+                // 设置画布尺寸与视频一致
+                canvasEl.width = videoEl.videoWidth;
+                canvasEl.height = videoEl.videoHeight;
+                canvasEl.getContext('2d').drawImage(videoEl, 0, 0);
+
+                // 转换为base64并更新视图
+                this.base64Data = canvasEl.toDataURL("image/png").split(",")[1];
+                this.photoSrc = "data:image/png;base64," + this.base64Data;
+                this.showPhoto = true;
+                this.showVideo = false;
+
+                // 关闭摄像头
+                this.mediaStream.getTracks().forEach(track => track.stop());
+                this.mediaStream = null;
+            },
+
+            // 处理图片上传
+            handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                if (!file.type.startsWith('image/')) {
+                    this.submitResult = "❌ 请选择图片文件（jpg/png等）";
+                    this.submitResultColor = "#f53f3f";
+                    this.$refs.fileInput.value = ""; // 清空选择
+                    return;
+                }
+
+                // 读取文件并转换为base64
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.base64Data = event.target.result.split(",")[1];
+                    this.photoSrc = event.target.result;
+                    this.showPhoto = true;
+                    this.showVideo = false;
+
+                    // 关闭摄像头流
+                    if (this.mediaStream) {
+                        this.mediaStream.getTracks().forEach(track => track.stop());
+                        this.mediaStream = null;
+                    }
+                };
+                reader.readAsDataURL(file);
+            },
+
+            // ====================== 表单提交方法 ======================
+            async submitForm() {
+                this.submitResult = "";
+                this.submitResultColor = "#1d2129";
+                let isValidate = true;
+
+                // 1. 强制验证所有字段
+                this.validateUsername();
+                this.validatePassword();
+                this.validateEmail();
+                this.validateVerifyCode();
+
+                // 2. 检查空字段并标记错误
+                if (!this.form.username.trim()) {
+                    this.formErrors.username = true;
+                    isValidate = false;
+                }
+                if (!this.form.password.trim()) {
+                    this.formErrors.password = true;
+                    isValidate = false;
+                }
+                if (!this.form.email.trim()) {
+                    this.formErrors.email = true;
+                    isValidate = false;
+                }
+                if (!this.form.verifyCode.trim()) {
+                    this.formErrors.verifyCode = true;
+                    isValidate = false;
+                }
+
+                // 3. 检查人脸数据
+                if (!this.base64Data) {
+                    this.submitResult = "❌ 请先拍照或选择人脸图片";
+                    this.submitResultColor = "#f53f3f";
+                    return;
+                }
+
+                // 4. 验证不通过终止
+                if (!isValidate || Object.values(this.formErrors).some(err => err)) {
+                    this.submitResult = "❌ 请修正表单中的错误后提交";
+                    this.submitResultColor = "#f53f3f";
+                    return;
+                }
+
+                // 5. 验证验证码
+                try {
+                    const verifyResp = await fetch("http://localhost:9999/verifyCode", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            key: this.form.email.trim(),
+                            code: this.form.verifyCode.trim()
+                        })
+                    });
+                    const verifyResult = await verifyResp.json();
+                    if (!verifyResult.valid) {
+                        this.submitResult = "❌ 验证码错误或已过期";
+                        this.submitResultColor = "#f53f3f";
+                        return;
+                    }
+                } catch (err) {
+                    this.submitResult = "❌ 验证码验证失败：" + err.message;
+                    this.submitResultColor = "#f53f3f";
+                    return;
+                }
+
+                // 6. 提交注册请求
+                const submitData = {
+                    username: this.form.username.trim(),
+                    password: this.form.password.trim(),
+                    email: this.form.email.trim(),
+                    base64: this.base64Data
+                };
+
+                try {
+                    this.submitResult = "⏳ 正在提交注册...";
+                    const resp = await fetch("http://localhost:9999/face/registerUserByCanvas", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(submitData)
+                    });
+
+                    const text = await resp.text();
+                    if (text.includes('face_token')) {
+                        this.submitResult = "✅ 注册请求成功！\n";
+                        this.submitResultColor = "#00b42a";
+                    } else {
+                        this.submitResult = "❌ 注册失败：\n" + text;
+                        this.submitResultColor = "#f53f3f";
+                    }
+                } catch (err) {
+                    this.submitResult = "❌ 请求失败：" + err.message;
+                    this.submitResultColor = "#f53f3f";
+                }
+            }
+        },
+        // 组件销毁前清理资源
+        beforeDestroy() {
+            // 关闭摄像头流
+            if (this.mediaStream) {
+                this.mediaStream.getTracks().forEach(track => track.stop());
+            }
+            // 清除倒计时定时器
+            if (this.countdownTimer) {
+                clearInterval(this.countdownTimer);
+            }
+        }
+    })
+</script>
+</body>
+</html>
